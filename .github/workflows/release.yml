@@ -1,0 +1,122 @@
+# input
+# https://github.com/BurntSushi/ripgrep/blob/master/.github/workflows/release.yml
+
+name: release
+
+on:
+  push:
+    # # Enable when testing release infrastructure on a branch.
+    # branches:
+    # - feature/fix-release
+    tags:
+    - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  create-release:
+    name: create-release
+    runs-on: ubuntu-latest
+    # env:
+    #   # Set to force version number, e.g., when no tag exists.
+    #   APP_VERSION: v255.255.255
+    outputs:
+      # create an output release from future step (by id)
+      upload_url: ${{ steps.release.outputs.upload_url }}
+      app_version: ${{ env.APP_VERSION }}
+    steps:
+      - name: Get version from tag
+        shell: bash
+        if: env.APP_VERSION == ''
+        run: |
+          echo "APP_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "version is: ${{ env.APP_VERSION }}"
+      - name: Create GitHub release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          # This token is provided by actions/create-release@v1, no need to create a token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.APP_VERSION }}
+          release_name: ${{ env.APP_VERSION }}
+
+  build-release:
+    name: build-release
+    needs: ['create-release']
+    runs-on: ${{ matrix.tuple.os }}
+    env:
+      TARGET_DIR: ./target
+      RUST_BACKTRACE: 1 # Emit backtraces on panics.
+    strategy:
+      matrix:
+        tuple:
+          - { build: 'linux-x86_64',         os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false }
+          - { build: 'linux-i686',           os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true  }
+          - { build: 'linux-arm',            os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true  } # aarch64
+        # - { build: 'linux-armv7',          os: 'ubuntu-latest',  target: 'armv7-unknown-linux-gnueabihf', cross: true  } # armv7
+        # - { build: 'linux-armv6',          os: 'ubuntu-latest',  target: 'arm-unknown-linux-gnueabihf',   cross: true  } # armv6
+          - { build: 'macos-x86_64',         os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false }
+        # - { build: 'macos-arm',            os: 'macos-latest',   target: 'aarch64-apple-darwin',          cross: true  } # arm
+          - { build: 'windows-x86_64-msvc',  os: 'windows-latest', target: 'x86_64-pc-windows-msvc',        cross: false }
+          - { build: 'windows-i686-msvc',    os: 'windows-latest', target: 'i686-pc-windows-msvc',          cross: false }
+          - { build: 'windows-x86_64-mingw', os: 'windows-latest', target: 'x86_64-pc-windows-gnu',         cross: false }
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+            profile: minimal
+            toolchain: ${{ matrix.toolchain }}
+            override: true
+            target: ${{ matrix.tuple.target }}
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target=${{ matrix.tuple.target }}
+          use-cross: ${{ matrix.tuple.cross }}
+
+      # - name: Strip release binary (linux and macos)
+      #   if: matrix.tuple.build == 'linux' || matrix.tuple.build == 'macos'
+      #   run: strip "target/${{ matrix.tuple.target }}/release/rg"
+
+      # - name: Strip release binary (arm)
+      #   if: matrix.tuple.build == 'linux-arm'
+      #   run: |
+      #     docker run --rm -v \
+      #       "$PWD/target:/target:Z" \
+      #       rustembedded/cross:arm-unknown-linux-gnueabihf \
+      #       arm-linux-gnueabihf-strip \
+      #       /target/arm-unknown-linux-gnueabihf/release/rg
+
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="run-clang-format-${{ needs.create-release.outputs.app_version }}-${{ matrix.tuple.target }}"
+          mkdir -p "$staging"
+
+          cp {readme.md,LICENSE,changelog.md} "$staging/"
+
+          if [ "${{ matrix.tuple.os }}" = "windows-latest" ]; then
+            cp "target/${{ matrix.tuple.target }}/release/run-clang-format.exe" "$staging/"
+            7z a "$staging.zip" "$staging"
+            echo "ASSET=$staging.zip" >> $GITHUB_ENV
+          else
+            cp "target/${{ matrix.tuple.target }}/release/run-clang-format" "$staging/"
+            tar czf "$staging.tar.gz" "$staging"
+            echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+          fi
+
+      - name: Upload release archive
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ${{ env.ASSET }}
+          asset_name: ${{ env.ASSET }}
+          asset_content_type: application/octet-stream
