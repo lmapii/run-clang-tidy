@@ -15,4 +15,4 @@ copy "%SYSTEMDRIVE%\Program Files\LLVM\bin\clang-tidy.exe" "artifacts\clang"
 
 @REM artifacts\clang\clang-tidy.exe --version
 
-make -C ..\..\test-files\c-demo\project build-data
+make -C test-files\c-demo\project build-data

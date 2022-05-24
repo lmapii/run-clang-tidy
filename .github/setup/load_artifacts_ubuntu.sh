@@ -34,4 +34,4 @@ rm clang-$ver.tgz
 ls -la artifacts/clang
 artifacts/clang/clang-tidy --version
 
-make -C ../../test-files/c-demo/project build-data
+make -C test-files/c-demo/project build-data
