@@ -1,6 +1,6 @@
 #!/bin/sh
 
-brew install gcc wget python3
+brew install gcc wget make python3
 
 pip3 install \
   argparse \
@@ -19,4 +19,5 @@ rm clang-$ver.tgz
 ls -la artifacts/clang
 artifacts/clang/clang-tidy --version
 
-make -C test-files/c-demo/project build-data
+gmake -C test-files/c-demo/project build-data
+ls -la test-files/c-demo/project/_bld/out

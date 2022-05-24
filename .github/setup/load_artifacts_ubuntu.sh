@@ -35,3 +35,4 @@ ls -la artifacts/clang
 artifacts/clang/clang-tidy --version
 
 make -C test-files/c-demo/project build-data
+ls -la test-files/c-demo/project/_bld/out
