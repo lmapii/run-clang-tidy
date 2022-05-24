@@ -30,11 +30,15 @@ pub struct JsonModel {
     /// the pre-filter, siblings of paths will not be filtered without the corresponding glob. E.g.,
     /// ".git" will not filter any files, only ".git/**" would. Notice that only
     pub filter_post: Option<Vec<String>>,
-    /// Optional path to a `.clang-tidy` yaml file (can be specified via --tidy)
+    /// Optional path to a `.clang-tidy` yaml file (can be specified via --tidy). If no such path
+    /// is provided by neither this field nor the command-line option, `clang-tidy` will perform a
+    /// search for the `compile_commands.json` through all parent paths of the file to analyze.
     pub tidy_file: Option<path::PathBuf>,
-    /// Optional path to the folder that should contain the `compile-commands.json` (can be
-    /// specified via --build-root). If no such path is provided, `clang-tidy` will perform a search
-    /// for the `compile_commands.json` through all parent paths of the file to analyze.
+    // TODO: allow this config to be skipped for clang-tidy >= 12.0.0
+    /// Optional path where the `.clang-tidy` file should be copied to while executing.
+    pub tidy_root: Option<path::PathBuf>,
+    /// Optional path to the folder that contains the `compile-commands.json` (can be specified
+    /// via --build-root).
     pub build_root: Option<path::PathBuf>,
     /// Optional path to the `clang-tidy` executable or command name
     pub command: Option<path::PathBuf>,
@@ -82,7 +86,9 @@ impl Builder {
             )
             .arg(
                 arg!(-t --tidy ... "Optional path to the .clang-tidy configuration file. \
-                                    Overrides <JSON> configuration")
+                                    Overrides <JSON> configuration. If no path is provided, \
+                                    `clang-tidy` will attempt a search for the compile commands \
+                                    through all parent paths of the file that is being analyzed.")
                 .allow_invalid_utf8(true)
                 .takes_value(true)
                 .required(false),
@@ -94,9 +100,7 @@ impl Builder {
                     .help(
                         "Optional path to the build root folder which should \
                          contain the compile-commands.json file. Overrides <JSON> \
-                         configuration. If no path is provided, clang-tidy will \
-                         attempt a search for the compile commands through all \
-                         parent paths of the file that is being analyzed.",
+                         configuration.",
                     )
                     // cannot use hyphen for long as macro ...
                     // arg!(-b --build-root ... "Help text.")

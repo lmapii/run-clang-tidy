@@ -19,6 +19,7 @@ src_paths := \
     $(ROOT_PATH)/pkg_b/module_c \
     $(ROOT_PATH)/subfolder/pkg_c/module_sub_a \
     $(ROOT_PATH)/subfolder/pkg_c/module_sub_b \
+    $(ROOT_PATH)/subfolder/pkg_c/module_untidy \
     $(ROOT_PATH)/project/src
 
 inc_dirs = $(foreach inc_path, $(sort $(src_paths)), -I $(inc_path))

@@ -3,13 +3,12 @@
  */
 
 #include "module_a.h"
-#include <stdbool.h>
 
 /***********************************************************************************************************************
  * Data
  **********************************************************************************************************************/
 
-static volatile bool _changeme = false;
+static volatile boolean _changeme = FALSE;
 
 /***********************************************************************************************************************
  * Functions
@@ -17,7 +16,7 @@ static volatile bool _changeme = false;
 
 void module_a_init (void)
 {
-    uint32_t some_value = 1;
+    uint32 some_value = 1;
 
     // nothing to see here
     _changeme = !_changeme;

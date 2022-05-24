@@ -5,7 +5,7 @@ use crate::cli::{self, utils};
 #[allow(unused_imports)]
 use color_eyre::{eyre::eyre, eyre::WrapErr, Help};
 
-pub fn tidy_file(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
+fn resolve_tidy_file(data: &cli::Data) -> eyre::Result<eyre::Result<path::PathBuf>> {
     let tidy_json = match &data.json.tidy_file {
         None => None,
         Some(path) => {
@@ -19,13 +19,13 @@ pub fn tidy_file(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
 
     let tidy = match tidy_json {
         None => match &data.tidy_file {
-            // no tidy file specified, picked by `clang-tidy` itself as the first `.clang-tidy`
-            // file that is encountered when walking all parent paths recurively.
-            None => Ok(None),
-            // tidy defined as CLI parameter but not in the .json configuration file
-            Some(s_cli) => Ok(Some(
-                path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap(),
+            // the following only leads to an error if no tidyRoot has been specified
+            None => Err(eyre::eyre!(
+                "Tidy file must either be specified as \
+                command-line parameter or within the configuration file"
             )),
+            // tidy defined as CLI parameter but not in the .json configuration file
+            Some(s_cli) => Ok(path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap()),
         },
         Some(s_cfg) => match &data.tidy_file {
             // tidy defined in the .json configuration file but not as CLI parameter
@@ -37,7 +37,7 @@ pub fn tidy_file(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
                         "Check the content of the field 'tidyFile' in {}.",
                         data.json.name
                     ))?;
-                Ok(Some(path.canonicalize().unwrap()))
+                Ok(path.canonicalize().unwrap())
             }
             // tidy defined in both, the .json configuration file and as CLI parameter
             Some(s_cli) => {
@@ -49,17 +49,71 @@ pub fn tidy_file(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
                     data.json.name,
                     s_cli.as_path().to_string_lossy()
                 );
-                Ok(Some(
-                    path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap(),
-                ))
+                Ok(path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap())
             }
         },
     };
 
-    tidy
+    Ok(tidy)
 }
 
-pub fn build_root(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
+pub fn tidy_and_root(data: &cli::Data) -> eyre::Result<Option<(path::PathBuf, path::PathBuf)>> {
+    let tidy_file = resolve_tidy_file(data)?;
+    let tidy_root = match &data.json.tidy_root {
+        None => None,
+        Some(path) => {
+            let path = if path.is_absolute() {
+                path::PathBuf::from(path.as_path())
+            } else {
+                let mut full_path = path::PathBuf::from(data.json.root.as_path());
+                full_path.push(path);
+                full_path
+            };
+            Some(
+                utils::dir_or_err(path.as_path())
+                    .wrap_err("Invalid configuration for 'tidyRoot'")
+                    .suggestion(
+                        "Please make sure that 'tidyRoot' is a valid \
+                         directory and check the access permissions",
+                    )?
+                    .canonicalize()
+                    .unwrap(),
+            )
+        }
+    };
+
+    if let Err(tidy_err) = tidy_file {
+        match tidy_root {
+            // scenario: no root folder and no tidy file specified, simply run clang-format
+            // and assume that there is a .clang-format file in the root folder of all files
+            None => Ok(None),
+            // unsupported scenario: root specified but missing tidy file
+            Some(_) => Err(tidy_err.wrap_err(
+                "A valid tidy file must be specified for \
+                     configurations with the field 'tidyRoot'",
+            ))
+            .suggestion(
+                "Specify the tidy file using the command line \
+                 parameter or the field 'tidyRoot' within the configuration file.",
+            ),
+        }
+    } else {
+        match tidy_root {
+            // scenario: root folder and tidy file have been specified. it is necessary to copy
+            // the tidy file to the root folder before executing clang-format
+            Some(tidy_root) => Ok(Some((tidy_file.unwrap(), tidy_root))),
+            // unsupported scenario: tidy file specified but missing root folder
+            None => Err(eyre::eyre!("Missing root folder configuration",)
+                .wrap_err(format!(
+                    "Found tidy file '{}' but could not find root folder configuration",
+                    tidy_file.unwrap().to_string_lossy()
+                ))
+                .suggestion("Please add the field 'tidyRoot' to your configuration file.")),
+        }
+    }
+}
+
+pub fn build_root(data: &cli::Data) -> eyre::Result<path::PathBuf> {
     let build_root_json = match &data.json.build_root {
         None => None,
         Some(path) => {
@@ -73,14 +127,11 @@ pub fn build_root(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
 
     let build_root = match build_root_json {
         None => match &data.build_root {
-            // no build root was specified, nor in the .json configuration file nor as command
-            // line parameter. `clang-tidy` will perform a search for the `compile_commands.json`
-            // through all parent paths of the file to analyze.
-            None => Ok(None),
-            // build root defined as CLI parameter but not in the .json configuration file
-            Some(s_cli) => Ok(Some(
-                path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap(),
+            None => Err(eyre::eyre!(
+                "Build root file must either be specified as \
+                command-line parameter or within the configuration file"
             )),
+            Some(s_cli) => Ok(path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap()),
         },
         Some(s_cfg) => match &data.build_root {
             // build root defined in the .json configuration file but not as CLI parameter
@@ -92,7 +143,7 @@ pub fn build_root(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
                         "Check the content of the field 'buildRoot' in {}.",
                         data.json.name
                     ))?;
-                Ok(Some(path.canonicalize().unwrap()))
+                Ok(path.canonicalize().unwrap())
             }
             // buildRoot defined in both, the .json configuration file and as CLI parameter
             Some(s_cli) => {
@@ -104,9 +155,7 @@ pub fn build_root(data: &cli::Data) -> eyre::Result<Option<path::PathBuf>> {
                     data.json.name,
                     s_cli.as_path().to_string_lossy()
                 );
-                Ok(Some(
-                    path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap(),
-                ))
+                Ok(path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap())
             }
         },
     };

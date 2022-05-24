@@ -13,7 +13,11 @@
  * Includes
  **********************************************************************************************************************/
 
-#include <stdint.h>
+#include "std_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /***********************************************************************************************************************
  * Definitions
@@ -34,6 +38,10 @@
 
 void module_sub_a_init (void);
 
-uint32_t module_sub_a_some_function (uint32_t some_parameter);
+uint32 module_sub_a_some_function (uint32 some_parameter);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _MODULE_SUB_A_H_ */

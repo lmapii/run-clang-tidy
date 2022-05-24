@@ -3,19 +3,19 @@
  */
 
 #include "module_b.h"
+#include "module_untidy.h"
 
 /***********************************************************************************************************************
  * Definitions
  **********************************************************************************************************************/
 
-// clang-tidy won't complain about uL naming in unused defines
-// #define _MAXLOOP 1234uL
+#define _MAXLOOP 1234UL
 
 /***********************************************************************************************************************
  * Data
  **********************************************************************************************************************/
 
-static volatile uint8_t _some_variable[] = {1, 2, 3};
+static volatile uint8 _some_variable[] = {MODULE_UNTIDY_SMTH, 2, 3};
 
 /***********************************************************************************************************************
  * Functions
@@ -23,7 +23,7 @@ static volatile uint8_t _some_variable[] = {1, 2, 3};
 
 int main (int argc, const char *argv[]) // NOLINT : unused argument argv
 {
-    // uint8_t i = 0;
+    // uint8 i = 0;
     // module_a_init ();
 
     module_b_init ();
@@ -32,8 +32,8 @@ int main (int argc, const char *argv[]) // NOLINT : unused argument argv
     _some_variable[0] = 123; // NOLINT: magic number
     _some_variable[0] = 2;
 
-    // for (i = 0; i < _MAXLOOP; i++)
-    // {
-    //     _some_variable[0] += 1;
-    // }
+    for (uint32 i = 0; i < _MAXLOOP; i++)
+    {
+        _some_variable[0] += 1;
+    }
 }

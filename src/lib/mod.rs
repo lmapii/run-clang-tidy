@@ -1,4 +1,4 @@
-use std::path;
+use std::{fs, path};
 
 #[allow(unused_imports)]
 use color_eyre::{eyre::eyre, eyre::WrapErr, Help};
@@ -37,7 +37,7 @@ impl LogStep {
         // TODO: the actual number of steps could be determined by a macro?
         let str = format!(
             "{}",
-            console::style(format!("[ {:1}/5 ]", self.0)).bold().dim()
+            console::style(format!("[ {:1}/6 ]", self.0)).bold().dim()
         );
         self.0 += 1;
         if log_pretty() {
@@ -65,6 +65,81 @@ fn get_command(data: &cli::Data) -> eyre::Result<cmd::Runner> {
     Ok(cmd)
 }
 
+fn place_tidy_file(
+    file_and_root: Option<(path::PathBuf, path::PathBuf)>,
+    step: &mut LogStep,
+) -> eyre::Result<Option<path::PathBuf>> {
+    if file_and_root.is_none() {
+        // in case no tidy file has been specified there's nothing to do
+        return Ok(None);
+    }
+
+    // the tidy file `src` should be copied to the destination directory `dst`
+    let (src_file, dst_root) = file_and_root.unwrap();
+    let mut dst_file = path::PathBuf::from(dst_root.as_path());
+    // by adding the filename of the tidy file we get the final name of the destination file
+    dst_file.push(".clang-tidy");
+
+    // it may happen that there is already a .clang-tidy file at the destination folder, e.g.,
+    // because the user placed it there while working with an editor supporting `clang-tidy`.
+    // in such a case we provide feedback by comparing the file contents and abort with an error
+    // if they do not match.
+    if dst_file.exists() {
+        let src_name = src_file.to_string_lossy();
+        let dst_name = dst_file.to_string_lossy();
+
+        log::warn!("Encountered existing tidy file {}", dst_name);
+
+        let content_src =
+            fs::read_to_string(&src_file).wrap_err(format!("Failed to read '{}'", dst_name))?;
+        let content_dst = fs::read_to_string(&dst_file.as_path())
+            .wrap_err(format!("Failed to read '{}'", dst_name))
+            .wrap_err("Error while trying to compare existing tidy file")
+            .suggestion(format!(
+                "Please delete or fix the existing tidy file {}",
+                dst_name
+            ))?;
+
+        if content_src == content_dst {
+            log::info!(
+                "{} Existing tidy file matches {}, skipping placement",
+                step.next(),
+                src_name
+            );
+            return Ok(None);
+        }
+
+        return Err(eyre::eyre!(
+            "Existing tidy file {} does not match provided tidy file {}",
+            dst_name,
+            src_name
+        )
+        .suggestion(format!(
+            "Please either delete the file {} or align the contents with {}",
+            dst_name, src_name
+        )));
+    }
+
+    log::info!(
+        "{} Copying tidy file to {}",
+        step.next(),
+        console::style(dst_file.to_string_lossy()).bold(),
+    );
+
+    // no file found at destination, copy the provided tidy file
+    let _ = fs::copy(&src_file, &dst_file)
+        .wrap_err(format!(
+            "Failed to copy tidy file to {}",
+            dst_root.to_string_lossy(),
+        ))
+        .suggestion(format!(
+            "Please check the permissions for the folder {}",
+            dst_root.to_string_lossy()
+        ))?;
+
+    Ok(Some(dst_file))
+}
+
 fn setup_jobs(jobs: Option<u8>) -> eyre::Result<()> {
     // configure rayon to use the specified number of threads (globally)
     if let Some(jobs) = jobs {
@@ -88,21 +163,28 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
     log::info!(" ");
     let mut step = LogStep::new();
 
-    let build_root = resolve::build_root(&data)?;
-    let tidy_file = resolve::tidy_file(&data)?;
-
-    if let Some(tidy_file) = &tidy_file {
+    let tidy_and_root = resolve::tidy_and_root(&data)?;
+    if let Some((tidy_file, _)) = &tidy_and_root {
         log::info!(
-            "{} Found configuration file {}",
+            "{} Found tidy file {}",
             step.next(),
             console::style(tidy_file.to_string_lossy()).bold(),
         );
     } else {
+        // no tidy file specified, it'll be picked by `clang-tidy` itself as the first `.clang-tidy`
+        // file that is encountered when walking all parent paths recursively.
         log::info!(
-            "{} No configuration file specified, assuming .clang-tidy exists in the project tree",
+            "{} No tidy file specified, assuming .clang-tidy exists in the project tree",
             step.next()
         );
     }
+
+    let build_root = resolve::build_root(&data)?;
+    log::info!(
+        "{} Using build root {}",
+        step.next(),
+        console::style(build_root.to_string_lossy()).bold(),
+    );
 
     let candidates =
         globs::build_matchers_from(&data.json.paths, &data.json.root, "paths", &data.json.name)?;
@@ -139,7 +221,24 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
         console::style(cmd_path.to_string_lossy()).bold(),
     );
 
-    let strip_root = None; // build_root;
+    let strip_root = if let Some((_, tidy_root)) = &tidy_and_root {
+        Some(path::PathBuf::from(tidy_root.as_path()))
+    } else {
+        None
+    };
+
+    let tidy = place_tidy_file(tidy_and_root, &mut step)?;
+    // binding for scope guard is not used, but an action needed when the variable goes out of scope
+    let _tidy = scopeguard::guard(tidy, |path| {
+        // ensure we delete the temporary tidy file at return or panic
+        if let Some(path) = path {
+            let str = format!("Cleaning up temporary file {}\n", path.to_string_lossy());
+            let str = console::style(str).dim().italic();
+
+            log::info!("\n{}", str);
+            let _ = fs::remove_file(path);
+        }
+    });
 
     setup_jobs(data.jobs)?;
     log::info!("{} Executing clang-tidy ...\n", step.next(),);
@@ -176,7 +275,7 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
             .into_par_iter()
             .map(|path| {
                 // TODO: specify --fix
-                let result = match cmd.run_tidy(&path, &tidy_file, &build_root, false) {
+                let result = match cmd.run_tidy(&path, &build_root, false) {
                     Ok(_) => None,
                     Err(err) => {
                         let print_path = match &strip_root {
@@ -188,7 +287,7 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
                 };
                 let (prefix, style) = match result {
                     Some(_) => ("Error", console::Style::new().red().bold()),
-                    None => ("Match", console::Style::new().green().bold()),
+                    None => ("Ok", console::Style::new().green().bold()),
                 };
                 log_step(prefix, path.as_path(), &strip_root, &pb, style);
                 if let Some(err) = &result {
@@ -203,10 +302,18 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
 
         if !failures.is_empty() {
             Err(eyre::eyre!(format!(
-                "Execution failed for the following files:\n{}",
+                "Execution failed for the following files:\n{}\n ",
                 failures
                     .into_iter()
-                    .map(|result| format!("{}", result.0.to_string_lossy()))
+                    .map(|result| {
+                        // let style = console::Style::new().red().bold();
+                        let style = console::Style::new().white().bold().on_red();
+                        format!(
+                            "{}\n{}",
+                            style.apply_to(result.0.to_string_lossy()),
+                            result.1,
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join("\n")
             )))
@@ -229,7 +336,6 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
         log::info!("{} Finished in {:#?}", step.next(), duration);
     }
 
-    log::info!(" "); // just an empty newline
     Ok(())
 }
 

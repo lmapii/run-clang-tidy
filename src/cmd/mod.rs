@@ -16,8 +16,8 @@ impl FromStr for Version {
 
         Ok(Version {
             major: caps[1].parse().map_err(|_| "Invalid major version")?,
-            minor: caps[1].parse().map_err(|_| "Invalid minor version")?,
-            patch: caps[1].parse().map_err(|_| "Invalid patch level")?,
+            minor: caps[2].parse().map_err(|_| "Invalid minor version")?,
+            patch: caps[3].parse().map_err(|_| "Invalid patch level")?,
         })
     }
 }
@@ -96,11 +96,16 @@ impl Runner {
 
         if let Err(err) = Runner::eval_status(output.status) {
             let stderr = String::from_utf8_lossy(&output.stderr);
+            let stdout = String::from_utf8_lossy(&output.stdout);
 
             if stderr.len() != 0 {
+                // log::error!("{}", stderr);
+                // log::info!("{}", stdout);
+
                 return Err(io::Error::new(
                     io::ErrorKind::Other,
-                    format!("{}\n---\n{}---", err, stderr),
+                    format!("{}\n---\n{}---\n{}", err, stderr, stdout),
+                    // format!("{}\n---\n{}", err, stdout),
                 ));
             }
             return Err(err);
@@ -108,36 +113,53 @@ impl Runner {
         Ok(())
     }
 
-    pub fn run_tidy<P, Q, R>(
-        &self,
-        file: P,
-        config_file: &Option<Q>,
-        build_root: &Option<R>,
-        fix: bool,
-    ) -> Result<(), io::Error>
+    pub fn run_tidy<P, Q>(&self, file: P, build_root: Q, fix: bool) -> Result<(), io::Error>
     where
         P: AsRef<path::Path>,
         Q: AsRef<path::Path>,
-        R: AsRef<path::Path>,
     {
         let mut cmd = process::Command::new(self.cmd.as_path());
 
         cmd.arg(file.as_ref().as_os_str());
-        if let Some(config_file) = config_file {
-            cmd.arg(format!(
-                "-config-file={}",
-                config_file.as_ref().to_string_lossy()
-            ));
-        }
-        if let Some(build_root) = build_root {
-            cmd.arg(format!("-p={}", build_root.as_ref().to_string_lossy()));
-        }
+        // TODO: the --config-file option does not exist for clang-tidy 10.0
+        // if let Some(config_file) = config_file {
+        //     cmd.arg(format!(
+        //         "--config-file={}",
+        //         config_file.as_ref().to_string_lossy()
+        //     ));
+        // }
+        cmd.arg(format!("-p={}", build_root.as_ref().to_string_lossy()));
         if fix {
-            cmd.arg("--fix");
+            cmd.arg("-fix");
         }
-        cmd.arg("--quiet");
+        // This suppresses printing statistics about ignored warnings:
+        // cmd.arg("-quiet");
 
         Runner::run(cmd)
+    }
+
+    pub fn supports_config_file(&self) -> Result<(), io::Error> {
+        if self.version.is_none() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Unknown version, --config-file requires \
+                clang-format version 12.0.0 or higher",
+            ));
+        }
+
+        let version = self.version.as_ref().unwrap();
+        if version.major < 9u8 {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!(
+                    "Invalid version {}, --config-file check requires \
+                    clang-format version 12.0.0 or higher",
+                    self.get_version().unwrap()
+                ),
+            ));
+        }
+
+        Ok(())
     }
 }
 

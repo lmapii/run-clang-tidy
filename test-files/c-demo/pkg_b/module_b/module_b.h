@@ -13,9 +13,13 @@
  * Includes
  **********************************************************************************************************************/
 
-#include <stdint.h>
+#include "std_types.h"
 // used to test sub-includes (changing module_c.h > main.c must be re-compiled)
 #include "module_c.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /***********************************************************************************************************************
  * Definitions
@@ -35,6 +39,8 @@ typedef enum
 
 void module_b_init (void);
 
-#endif /* _MODULE_B_H_ */
+#ifdef __cplusplus
+}
+#endif
 
-// EOF
+#endif /* _MODULE_B_H_ */

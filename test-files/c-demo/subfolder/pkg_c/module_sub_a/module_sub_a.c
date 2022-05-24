@@ -3,7 +3,6 @@
  */
 
 #include "module_sub_a.h"
-#include <stdbool.h>
 
 /***********************************************************************************************************************
  * Definitions
@@ -15,15 +14,15 @@
  * Data
  **********************************************************************************************************************/
 
-static bool _changeme = false;
+static boolean _changeme = FALSE;
 
 /***********************************************************************************************************************
  * Functions
  **********************************************************************************************************************/
 
-static void _module_sub_a_some_function (uint16_t unused);
+static void _module_sub_a_some_function (uint16 unused);
 
-static void _module_sub_a_some_function (uint16_t unused)
+static void _module_sub_a_some_function (uint16 unused)
 {
     // unused += 1;
 }
@@ -35,7 +34,7 @@ void module_sub_a_init (void)
     _module_sub_a_some_function (_changeme);
 }
 
-uint32_t module_sub_a_some_function (uint32_t some_parameter)
+uint32 module_sub_a_some_function (uint32 some_parameter)
 {
     some_parameter += 1; // MODULE_SUB_A_SMTH;
     if ((some_parameter > 2 && some_parameter <= 3) || some_parameter == 1)

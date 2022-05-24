@@ -1,0 +1,9 @@
+{
+  "paths": ["../c-demo/pkg_?/**/*.[ch]", "../c-demo/{project,subfolder}/**/*.[ch]", "../c-demo/**/*.[ch]"],
+  "filterPre": [".*"],
+  "filterPost": ["FreeRTOSConfig.h", "*.pb.[ch]", "sdk_config.h", "ble/**", "module_untidy/**"],
+  "tidyFile": "../clang-tidy/named.clang-tidy",
+  "tidyRoot": "../c-demo",
+  "buildRoot": "../c-demo/_bld/out",
+  "command": "../../artifacts/clang/clang-tidy"
+}
