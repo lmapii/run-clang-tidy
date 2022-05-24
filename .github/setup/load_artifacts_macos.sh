@@ -20,4 +20,4 @@ ls -la artifacts/clang
 artifacts/clang/clang-tidy --version
 
 gmake -C test-files/c-demo/project build-data
-ls -la test-files/c-demo/project/_bld/out
+ls -la test-files/c-demo/_bld/out
