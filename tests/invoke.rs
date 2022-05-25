@@ -26,8 +26,7 @@ fn crate_root() -> path::PathBuf {
 
 fn crate_root_rel(path: &str) -> path::PathBuf {
     let path = crate_root().join(path);
-    assert_eq!(
-        true,
+    assert!(
         path.exists(),
         "Path {} does not exist",
         path.to_string_lossy()
