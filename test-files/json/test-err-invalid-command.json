@@ -1,0 +1,8 @@
+{
+  "description": "command does not exist, all other fields are valid",
+  "paths": [],
+  "styleFile": "../clang-tidy/.clang-tidy",
+  "styleRoot": "../c-demo",
+  "command": "i/do/not/exist",
+  "buildRoot": "../c-demo/_bld/out"
+}

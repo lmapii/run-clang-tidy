@@ -1,0 +1,7 @@
+{
+  "description": "the path to the tidy file does not exist",
+  "paths": [],
+  "tidyFile": "i/do/not/exist/.clang-tidy",
+  "tidyRoot": "../c-demo",
+  "buildRoot": "../c-demo/_bld/out"
+}

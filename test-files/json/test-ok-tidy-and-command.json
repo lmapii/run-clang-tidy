@@ -1,0 +1,8 @@
+{
+  "description": "all provided fields are valid",
+  "paths": [],
+  "styleFile": "../clang-tidy/.clang-tidy",
+  "styleRoot": "../c-demo",
+  "command": "../../artifacts/clang/clang-tidy",
+  "buildRoot": "../c-demo/_bld/out"
+}

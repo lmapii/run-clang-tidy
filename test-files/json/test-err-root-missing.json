@@ -1,0 +1,7 @@
+{
+  "description": "all provided fields are valid but buildRoot is missing",
+  "paths": [],
+  "styleFile": "../clang-tidy/.clang-tidy",
+  "styleRoot": "../c-demo",
+  "command": "../../artifacts/clang/clang-tidy"
+}

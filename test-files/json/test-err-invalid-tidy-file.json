@@ -1,0 +1,7 @@
+{
+  "description": "the path to the tidy file exists, but it is not a .clang-tidy file",
+  "paths": [],
+  "tidyFile": "../clang-tidy/some.file",
+  "tidyRoot": "../c-demo",
+  "buildRoot": "../c-demo/_bld/out"
+}

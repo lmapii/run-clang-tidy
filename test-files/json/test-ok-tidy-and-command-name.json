@@ -1,0 +1,8 @@
+{
+  "description": "all provided fields are valid, but command is only valid if it is in $PATH",
+  "paths": [],
+  "styleFile": "../clang-tidy/.clang-tidy",
+  "styleRoot": "../c-demo",
+  "command": "clang-tidy",
+  "buildRoot": "../c-demo/_bld/out"
+}
