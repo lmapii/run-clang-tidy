@@ -1,0 +1,8 @@
+{
+  "description": "command is not a clang-tidy executable, all other fields are valid",
+  "paths": [],
+  "styleFile": "../clang-tidy/.clang-tidy",
+  "styleRoot": "../c-demo",
+  "command": "../clang-tidy/some.file",
+  "buildRoot": "../c-demo/_bld/out"
+}

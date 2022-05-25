@@ -1,0 +1,8 @@
+{
+  "description": "all provided fields except for buildRoot are valid",
+  "paths": [],
+  "styleFile": "../clang-tidy/.clang-tidy",
+  "styleRoot": "../c-demo",
+  "command": "../../artifacts/clang/clang-tidy",
+  "buildRoot": "some/invalid/path"
+}

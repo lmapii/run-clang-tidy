@@ -1,0 +1,5 @@
+{
+  "description": "error in glob",
+  "paths": ["../c-demo/**/*.[c"],
+  "buildRoot": "../c-demo/_bld/out"
+}

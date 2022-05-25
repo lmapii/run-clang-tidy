@@ -1,0 +1,5 @@
+{
+  "description": "valid, since 'paths' is defined",
+  "paths": [],
+  "buildRoot": "../c-demo/_bld/out"
+}

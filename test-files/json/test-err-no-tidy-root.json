@@ -1,0 +1,6 @@
+{
+  "description": "invalid, since 'paths' is defined and 'tidyFile' exists, but 'tidyRoot' has not been specified",
+  "paths": [],
+  "tidyFile": "../clang-tidy/.clang-tidy",
+  "buildRoot": "../c-demo/_bld/out"
+}

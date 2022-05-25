@@ -1,0 +1,7 @@
+{
+  "description": "invalid, since 'tidyRoot' is not a valid path",
+  "paths": [],
+  "tidyFile": "../clang-tidy/.clang-tidy",
+  "tidyRoot": "../some/invalid/path",
+  "buildRoot": "../c-demo/_bld/out"
+}

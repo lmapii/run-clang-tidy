@@ -128,7 +128,7 @@ pub fn build_root(data: &cli::Data) -> eyre::Result<path::PathBuf> {
     let build_root = match build_root_json {
         None => match &data.build_root {
             None => Err(eyre::eyre!(
-                "Build root file must either be specified as \
+                "Build root must either be specified as \
                 command-line parameter or within the configuration file"
             )),
             Some(s_cli) => Ok(path::PathBuf::from(s_cli.as_path()).canonicalize().unwrap()),

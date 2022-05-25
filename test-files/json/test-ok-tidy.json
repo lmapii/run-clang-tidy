@@ -1,0 +1,7 @@
+{
+  "description": "valid, since 'paths' is defined, 'tidyFile' and 'tidyRoot' exist",
+  "paths": [],
+  "tidyFile": "../clang-tidy/.clang-tidy",
+  "tidyRoot": "../c-demo",
+  "buildRoot": "../c-demo/_bld/out"
+}
