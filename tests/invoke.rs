@@ -217,7 +217,9 @@ fn invoke_arg_command() {
     run_cmd_and_assert(
         cmd().arg(json.as_os_str()).arg(format!(
             "--command={}",
-            crate_root_rel("artifacts/clang/clang-tidy").to_string_lossy()
+            crate_root()
+                .join("artifacts/clang/clang-tidy")
+                .to_string_lossy()
         )),
         true,
     );
