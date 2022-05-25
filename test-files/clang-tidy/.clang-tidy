@@ -78,7 +78,14 @@ WarningsAsErrors: '
     readability-uppercase-literal-suffix,
     readability-identifier-naming,
     '
-HeaderFilterRegex: ''
+
+# From the docs: "Output warnings from headers matching this filter"
+# But the goal should be to exclude(!) the headers for which clang-tidy is not called,
+# e.g., for naming convention checks. DO NOT USE this field if you don't want to analyze
+# header files just because they're included (seems to work).
+# HeaderFilterRegex: '$'
+# https://github.com/Kitware/CMake/blob/master/.clang-tidy
+# HeaderFilterRegex: '.*\.(h|hxx|cxx)$'
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            martin

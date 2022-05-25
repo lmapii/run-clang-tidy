@@ -9,7 +9,6 @@ on:
   push:
     branches:
     - main
-    - docs-and-tests
   schedule:
   - cron: '00 01 * * *'
 

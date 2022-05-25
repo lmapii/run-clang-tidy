@@ -8,7 +8,8 @@
  * Functions
  **********************************************************************************************************************/
 
-void module_unused_init (void)
+void module_unused_init (uint8 some_parameter)
 {
-    // nothing to see here
+    // nothing to see here. this file is not part of the compilation unit
+    // and therefore there will be no warning for the unused parameter
 }

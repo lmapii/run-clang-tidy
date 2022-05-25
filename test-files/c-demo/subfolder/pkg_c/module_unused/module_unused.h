@@ -23,13 +23,19 @@ extern "C" {
  * Definitions
  **********************************************************************************************************************/
 
+typedef enum
+{
+    E_MODULE_UNUSED_SOME_VALLUE_0,
+    this_does_not_match_the_style,
+} e_module_unused_a_enum;
+
 #define MODULE_UNUSED_SMTH 0x0
 
 /***********************************************************************************************************************
  * Functions
  **********************************************************************************************************************/
 
-void module_unused_init (void);
+void module_unused_init (uint8 some_parameter);
 
 #ifdef __cplusplus
 }
