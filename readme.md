@@ -290,7 +290,7 @@ By default, the tool will process each resolved path one by one. This can be rat
 
 ## Specifying an alternative tidy file and command
 
-The command-line options `--tidy` and `--command` allow specifying a `.clang-format` file and the command to use for executing `clang-format`. Please refer to the description of the `.json` configuration file for the [fields `tidyFile`](#specifying-a-clang-format-tidy-file-and-a-root-directory) [and `command`](#specifying-the-clang-format-command).
+The command-line options `--tidy` and `--command` allow specifying a `.clang-tidy` file and the command to use for executing `clang-tidy`. Please refer to the description of the `.json` configuration file for the [fields `tidyFile`](#specifying-a-clang-tidy-file-and-a-root-directory) and [`command`](#specifying-the-clang-tidy-command).
 
 > **Remark:** Specifying `--tidy` requires the field `tidyRoot` to be configured.
 
@@ -323,15 +323,15 @@ ProjectRoot
 └── .clang-tidy
 ```
 
-When executing the tool with the following configuration, the files in `Some/Path` will be analzyed using `Some/.clang-tidy` and **not** with the configured style file, since this tool does not scan any paths for existing `.clang-tidy` files.
+When executing the tool with the following configuration, the files in `Some/Path` will be analzyed using `Some/.clang-tidy` and **not** with the configured tidy file, since this tool does not scan any paths for existing `.clang-tidy` files.
 
 ```json
 {
   "paths": [
     "./Some/**/*.[ch]",
   ],
-  "styleFile": ".clang-tidy",
-  "styleRoot": "../"
+  "tidyFile": ".clang-tidy",
+  "tidyRoot": "../"
 }
 ```
 
