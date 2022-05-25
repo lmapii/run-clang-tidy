@@ -6,8 +6,8 @@ name: release
 on:
   push:
     # # Enable when testing release infrastructure on a branch.
-    # branches:
-    # - feature/fix-release
+    branches:
+    - feature/fix-release
     tags:
     - "v[0-9]+.[0-9]+.[0-9]+"
 
@@ -15,9 +15,9 @@ jobs:
   create-release:
     name: create-release
     runs-on: ubuntu-latest
-    # env:
-    #   # Set to force version number, e.g., when no tag exists.
-    #   APP_VERSION: v255.255.255
+    env:
+      # Set to force version number, e.g., when no tag exists.
+      APP_VERSION: v255.255.255
     outputs:
       # create an output release from future step (by id)
       upload_url: ${{ steps.release.outputs.upload_url }}
@@ -98,8 +98,6 @@ jobs:
         run: |
           staging="run-clang-tidy-${{ needs.create-release.outputs.app_version }}-${{ matrix.tuple.target }}"
           mkdir -p "$staging"
-
-          cp {readme.md,LICENSE,changelog.md} "$staging/"
 
           if [ "${{ matrix.tuple.os }}" = "windows-latest" ]; then
             cp "target/${{ matrix.tuple.target }}/release/run-clang-tidy.exe" "$staging/"
