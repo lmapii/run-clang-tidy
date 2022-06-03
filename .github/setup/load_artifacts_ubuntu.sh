@@ -21,6 +21,18 @@ sudo pip3 install \
   argparse \
   datetime
 
+sudo apt-get remove -y \
+  llvm \
+  clang \
+  clang-tidy
+
+# echo "path is $PATH"
+# echo "checking clang-tidy"
+# clang-tidy --version
+# which clang-tidy
+# echo ".done"
+sudo rm -f /usr/bin/clang-tidy
+
 ver="14.0.0"
 pkg="clang+llvm-$ver-x86_64-linux-gnu-ubuntu-18.04"
 

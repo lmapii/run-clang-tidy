@@ -99,12 +99,8 @@ fn invoke_json_and_bin() {
 
     let json = crate_root_rel("test-files/json/test-ok-empty-paths.json");
     // .json file with empty paths is accepted, but clang-tidy is not in the $PATH
-    if cfg!(linux) {
-        // TODO: cmd() does not seem to properly clear the env/path in linux ?
-        // this might be related since we're invoking a command within a command
-        // so on linux the original PATH might apply for each invocation within this command
-        run_cmd_and_assert(cmd().arg(json.as_os_str()), false);
-    }
+    run_cmd_and_assert(cmd().arg(json.as_os_str()), false);
+
     // as soon as we add the path to clang-tidy to $PATH the execution is successful
     run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()), true);
 }
