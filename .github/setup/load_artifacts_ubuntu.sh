@@ -21,6 +21,10 @@ sudo pip3 install \
   argparse \
   datetime
 
+sudo apt-get remove \
+  llvm \
+  clang
+
 ver="14.0.0"
 pkg="clang+llvm-$ver-x86_64-linux-gnu-ubuntu-18.04"
 

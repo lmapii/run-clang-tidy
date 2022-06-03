@@ -103,8 +103,8 @@ jobs:
         os:
           # testing on the real VMs only, not via CROSS
           - ubuntu-18.04
-          - macos-latest
-          - windows-latest
+          # - macos-latest
+          # - windows-latest
         toolchain:
           - stable
     steps:
