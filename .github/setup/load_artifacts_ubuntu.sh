@@ -26,12 +26,12 @@ sudo apt-get remove -y \
   clang \
   clang-tidy
 
-# should fail
-echo "path is $PATH"
-echo "checking clang-tidy"
-clang-tidy --version
-which clang-tidy
-echo ".done"
+# echo "path is $PATH"
+# echo "checking clang-tidy"
+# clang-tidy --version
+# which clang-tidy
+# echo ".done"
+sudo rm -f /usr/bin/clang-tidy
 
 ver="14.0.0"
 pkg="clang+llvm-$ver-x86_64-linux-gnu-ubuntu-18.04"
