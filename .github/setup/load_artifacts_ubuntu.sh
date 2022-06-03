@@ -23,7 +23,8 @@ sudo pip3 install \
 
 sudo apt-get remove -y \
   llvm \
-  clang
+  clang \
+  clang-tidy
 
 # should fail
 echo "path is $PATH"
