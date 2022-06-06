@@ -21,7 +21,7 @@ Execute `run-clang-tidy --help` for more details, or `run-clang-tidy schema` for
 - Hidden paths and files are excluded unless the setting is changed [in the configuration file](#pre-filtering).
 - This tool assumes that `clang-tidy` is installed and in your path. The command can be specified in your [configuration file](#specifying-the-clang-tidy-command) or as a [command-line parameter](#specifying-an-alternative-tidy-file-and-command).
 - Paths can be specified using [glob- or Unix-style path syntax](#glob--and-path-syntax).
-- Formatting is [executed in parallel](#speeding-up-the-execution) if the `-j` option is specified.
+- The analysis is [executed in parallel](#speeding-up-the-execution) if the `-j` option is specified.
 - If your application doesn't compile the analysis will fail. Please get familiar with [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/).
 - Most modern build systems support generating the [compilation database](https://clang.llvm.org/docs/JSONCompilationDatabase.html) that is required to execute `clang-tidy`. It can be created using `cmake` or you can build one yourself using plain `make` as demostrated in the [example makefile](test-files/c-demo/project/makefile).
 - Read [The build root and `compile_commands.json`](#the-build-root-and-compile_commandsjson) for details about the compilation database.
