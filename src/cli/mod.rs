@@ -42,7 +42,7 @@ pub struct JsonModel {
     pub build_root: Option<path::PathBuf>,
     /// Optional path to the `clang-tidy` executable or command name
     pub command: Option<path::PathBuf>,
-
+    // TODO: allow to specify additional options
     #[serde(skip)]
     /// Parent directory of the Json file, used to resolve paths specified within
     pub root: path::PathBuf,
