@@ -99,6 +99,8 @@ jobs:
           staging="run-clang-tidy-${{ needs.create-release.outputs.app_version }}-${{ matrix.tuple.target }}"
           mkdir -p "$staging"
 
+          cp {readme.md,LICENSE} "$staging/"
+
           if [ "${{ matrix.tuple.os }}" = "windows-latest" ]; then
             cp "target/${{ matrix.tuple.target }}/release/run-clang-tidy.exe" "$staging/"
             7z a "$staging.zip" "$staging"
