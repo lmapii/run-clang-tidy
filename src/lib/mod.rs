@@ -245,25 +245,14 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
 
     let pb = indicatif::ProgressBar::new(paths.len() as u64);
     pb.set_style(
-        indicatif::ProgressStyle::default_bar()
-            .template(if console::Term::stdout().size().1 > 80 {
-                "{prefix:>12.cyan.bold} [{bar:26}] {pos}/{len} {wide_msg}"
-            } else {
-                "{prefix:>12.cyan.bold} [{bar:26}] {pos}/{len}"
-            })
-            .progress_chars("=> "),
+        indicatif::ProgressStyle::with_template(if console::Term::stdout().size().1 > 80 {
+            "{prefix:>12.cyan.bold} [{bar:26}] {pos}/{len} {wide_msg}"
+        } else {
+            "{prefix:>12.cyan.bold} [{bar:26}] {pos}/{len}"
+        })
+        .unwrap()
+        .progress_chars("=> "),
     );
-
-    // preparation for indicatif 0.17
-    // pb.set_style(
-    //     indicatif::ProgressStyle::with_template(if console::Term::stdout().size().1 > 80 {
-    //         "{prefix:>12.cyan.bold} [{bar:26}] {pos}/{len} {wide_msg}"
-    //     } else {
-    //         "{prefix:>12.cyan.bold} [{bar:26}] {pos}/{len}"
-    //     })
-    //     .unwrap()
-    //     .progress_chars("=> "),
-    // );
 
     if log_pretty() {
         pb.set_prefix("Running");
