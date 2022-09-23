@@ -48,9 +48,9 @@ pub fn build_glob_set_from<'a>(
 }
 
 pub fn match_paths<P>(
-    candidates: Vec<globmatch::Matcher<P>>,
-    filter: Option<Vec<globmatch::GlobSet>>,
-    filter_post: Option<Vec<globmatch::GlobSet>>,
+    candidates: Vec<globmatch::Matcher<'_, P>>,
+    filter: Option<Vec<globmatch::GlobSet<'_>>>,
+    filter_post: Option<Vec<globmatch::GlobSet<'_>>>,
 ) -> (Vec<path::PathBuf>, Vec<path::PathBuf>)
 where
     P: AsRef<path::Path>,

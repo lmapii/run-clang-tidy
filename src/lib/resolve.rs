@@ -269,7 +269,7 @@ mod tests {
                 let is_file = path
                     .path
                     .file_name()
-                    .and_then(|file_name| (path.path.as_os_str() == file_name).then(|| file_name))
+                    .and_then(|file_name| (path.path.as_os_str() == file_name).then_some(file_name))
                     .is_some();
 
                 assert_eq!(path.is_file, is_file);

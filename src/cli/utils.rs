@@ -148,7 +148,7 @@ where
     let is_file = path
         .as_ref()
         .file_name()
-        .and_then(|file_name| (path.as_ref().as_os_str() == file_name).then(|| true))
+        .and_then(|file_name| (path.as_ref().as_os_str() == file_name).then_some(true))
         .is_some();
 
     if is_file {

@@ -51,12 +51,17 @@ pub struct JsonModel {
     pub name: String,
 }
 
+// goal: have compatible .json configuration files for clang-format and clang-tidy
+// it should be possible to specify all command line options and non-unit relative paths
+// using the command line, such that they can be set using ENV variables
+
 #[derive(Debug)]
 pub struct Data {
     /// Json input data
     pub json: JsonModel,
     /// Command-line override for the tidy file
     pub tidy_file: Option<path::PathBuf>,
+    // TODO: add tidy_root override
     /// Command-line override for the build root folder
     pub build_root: Option<path::PathBuf>,
     /// Command-line override for the clang-tidy executable
