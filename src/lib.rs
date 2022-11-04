@@ -5,8 +5,8 @@ use color_eyre::{eyre::eyre, eyre::WrapErr, Help};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::Deserialize;
 
-use crate::cli;
-use crate::cmd;
+pub mod cli;
+pub mod cmd;
 
 mod globs;
 mod resolve;
@@ -92,7 +92,7 @@ fn place_tidy_file(
 
         let content_src =
             fs::read_to_string(&src_file).wrap_err(format!("Failed to read '{}'", dst_name))?;
-        let content_dst = fs::read_to_string(&dst_file.as_path())
+        let content_dst = fs::read_to_string(dst_file.as_path())
             .wrap_err(format!("Failed to read '{}'", dst_name))
             .wrap_err("Error while trying to compare existing tidy file")
             .suggestion(format!(
