@@ -162,7 +162,7 @@ impl Builder {
         }
 
         let json_path = self.path_for_key("JSON", true)?;
-        let json = JsonModel::load(&json_path).wrap_err("Invalid parameter for <JSON>")?;
+        let json = JsonModel::load(json_path).wrap_err("Invalid parameter for <JSON>")?;
 
         let tidy_file = match self.matches.is_present("tidy") {
             false => None,
@@ -170,7 +170,7 @@ impl Builder {
                 let tidy_path = self
                     .path_for_key("tidy", true)
                     .wrap_err("Invalid parameter for option --tidy")?;
-                let path = utils::file_with_name_or_ext(&tidy_path, ".clang-tidy")
+                let path = utils::file_with_name_or_ext(tidy_path, ".clang-tidy")
                     .wrap_err("Invalid parameter for option --tidy")?;
                 Some(path)
             }

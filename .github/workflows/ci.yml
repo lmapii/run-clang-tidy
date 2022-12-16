@@ -59,9 +59,9 @@ jobs:
         # alternatively matrix could be shared and specified via .json
         # see https://github.community/t/how-to-share-matrix-between-jobs/128595/8
         # ---
-          - { build: 'linux-x86_64-pinned',   os: 'ubuntu-18.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.64.0 }
-          - { build: 'windows-x86_64-pinned', os: 'windows-2019',   target: 'x86_64-pc-windows-msvc',        cross: false, rust: 1.64.0 }
-          - { build: 'macos-x86_64-pinned',   os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: 1.64.0 }
+          - { build: 'linux-x86_64-pinned',   os: 'ubuntu-18.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.66.0 }
+          - { build: 'windows-x86_64-pinned', os: 'windows-2019',   target: 'x86_64-pc-windows-msvc',        cross: false, rust: 1.66.0 }
+          - { build: 'macos-x86_64-pinned',   os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: 1.66.0 }
           - { build: 'linux-x86_64',          os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false, rust: stable }
           - { build: 'linux-i686',            os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true,  rust: stable }
           - { build: 'linux-arm',             os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true,  rust: stable } # aarch64
