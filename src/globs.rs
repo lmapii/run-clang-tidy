@@ -5,10 +5,9 @@ use color_eyre::{eyre::eyre, eyre::WrapErr, Help};
 
 fn wrap_result<T>(result: eyre::Result<T>, field: &str, file: &str) -> eyre::Result<T> {
     result
-        .wrap_err(format!("Error while parsing '{}'", field))
+        .wrap_err(format!("Error while parsing '{field}'"))
         .suggestion(format!(
-            "Check the format of the field '{}' in the provided file '{}'.",
-            field, file
+            "Check the format of the field '{field}' in the provided file '{file}'."
         ))
 }
 

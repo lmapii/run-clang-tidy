@@ -232,8 +232,7 @@ impl Builder {
             .value_of_os(key)
             .map(std::path::PathBuf::from)
             .ok_or(eyre!(format!(
-                "Could not convert parameter '{}' to path",
-                key
+                "Could not convert parameter '{key}' to path"
             )))?;
 
         if check_exists {
@@ -254,13 +253,12 @@ impl JsonModel {
         let json_name = json_path.to_string_lossy();
 
         let f = std::fs::File::open(path.as_ref())
-            .wrap_err(format!("Failed to open provided JSON file '{}'", json_name))?;
+            .wrap_err(format!("Failed to open provided JSON file '{json_name}'"))?;
 
         let mut json: JsonModel = serde_json::from_reader(std::io::BufReader::new(f))
-            .wrap_err(format!("Validation failed for '{}'", json_name))
+            .wrap_err(format!("Validation failed for '{json_name}'"))
             .suggestion(format!(
-        "Please make sure that '{}' is a valid .json file and the contents match the required schema.",
-        json_name))?;
+        "Please make sure that '{json_name}' is a valid .json file and the contents match the required schema."))?;
 
         json.root = json_path
             .canonicalize()

@@ -46,7 +46,7 @@ pub fn setup(matches: &clap::ArgMatches) {
             }
 
             if let Some(target) = target {
-                write!(f, " {}", target)?;
+                write!(f, " {target}")?;
             }
             writeln!(f, " {}", s.value(record.args()))
         })

@@ -1,6 +1,6 @@
 [package]
 name = "run-clang-tidy"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Martin Lampacher <lmapii@gmail.com>"]
 description = """
 Cross platform CLI wrapper for executing clang-tidy based paths or globs specified
@@ -16,15 +16,15 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "3.1", features = ["derive", "cargo"] }
-schemars = "0.8.8"
+schemars = "0.8"
 serde = "1.0"
 serde_json = "1.0"
 log = "0.4"
 env_logger = "0.9"
 eyre = "0.6"
 color-eyre = { version = "0.6", default-features = false, features = ["capture-spantrace"] }
-regex = "1.5.5"
-scopeguard = "1.1.0"
+regex = "1.5"
+scopeguard = "1.1"
 # globmatch = { path = "../globmatch" }
 globmatch = "0.2"
 rayon = "1.5"
@@ -34,10 +34,8 @@ console = { version = "0.15", default-features = false, features = ["ansi-parsin
 
 [dev-dependencies]
 doc-comment = "0.3"
-assert_cmd = "2.0.4"
+assert_cmd = "2.0"
 
-# [profile.release]
+[profile.release]
+strip = true
 # strip="debuginfo"
-# error: failed to run custom build command for `libc v0.2.123`
-# Caused by:
-#   process didn't exit successfully: `/path/to/run-clang-tidy/target/release/build/libc-f010f5927a4f70bf/build-script-build` (signal: 9, SIGKILL: kill)
