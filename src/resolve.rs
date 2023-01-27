@@ -255,7 +255,7 @@ mod tests {
 
         fn test_paths(paths: &[TestPaths]) {
             for path in paths.iter() {
-                println!("checking {:?}", path);
+                println!("checking {path:?}");
                 println!("  components{}", path.path.components().count());
                 assert_eq!(path.is_absolute, path.path.is_absolute());
                 assert_eq!(path.is_relative, path.path.is_relative());

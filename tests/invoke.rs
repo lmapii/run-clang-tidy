@@ -280,8 +280,8 @@ fn invoke_quiet() {
         let stderr = String::from_utf8(output.stderr).unwrap();
 
         println!("status: {}", output.status);
-        println!("{}", stdout);
-        println!("{}", stderr);
+        println!("{stdout}");
+        println!("{stderr}");
 
         if expect_quiet {
             assert_eq!(0, stdout.len());

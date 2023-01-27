@@ -62,14 +62,12 @@ where
         .file_name()
         .and_then(std::ffi::OsStr::to_str)
         .ok_or(eyre!(format!(
-            "Expected file with name '{}', got '{}'",
-            name, name_str
+            "Expected file with name '{name}', got '{name_str}'"
         )))?;
 
     if file_name.to_lowercase() != name.to_lowercase() {
         return Err(eyre!(format!(
-            "Expected file with name '{}', got '{}'",
-            name, name_str
+            "Expected file with name '{name}', got '{name_str}'"
         )));
     }
     Ok(buf)
@@ -87,8 +85,7 @@ where
         .extension()
         .and_then(std::ffi::OsStr::to_str)
         .ok_or(eyre!(format!(
-            "Expected file with extension '{}', got file '{}'",
-            ext, name
+            "Expected file with extension '{ext}', got file '{name}'"
         )))?;
 
     let ext_minus = match ext.chars().next() {
@@ -102,8 +99,7 @@ where
 
     if ext_minus.to_lowercase() != file_ext.to_lowercase() {
         return Err(eyre!(format!(
-            "Expected file extension '{}', got '{}'",
-            ext_minus, file_ext
+            "Expected file extension '{ext_minus}', got '{file_ext}'"
         )));
     }
     Ok(buf)

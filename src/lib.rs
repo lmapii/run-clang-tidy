@@ -91,13 +91,12 @@ fn place_tidy_file(
         log::warn!("Encountered existing tidy file {}", dst_name);
 
         let content_src =
-            fs::read_to_string(&src_file).wrap_err(format!("Failed to read '{}'", dst_name))?;
+            fs::read_to_string(&src_file).wrap_err(format!("Failed to read '{dst_name}'"))?;
         let content_dst = fs::read_to_string(dst_file.as_path())
-            .wrap_err(format!("Failed to read '{}'", dst_name))
+            .wrap_err(format!("Failed to read '{dst_name}'"))
             .wrap_err("Error while trying to compare existing tidy file")
             .suggestion(format!(
-                "Please delete or fix the existing tidy file {}",
-                dst_name
+                "Please delete or fix the existing tidy file {dst_name}"
             ))?;
 
         if content_src == content_dst {
@@ -115,8 +114,7 @@ fn place_tidy_file(
             src_name
         )
         .suggestion(format!(
-            "Please either delete the file {} or align the contents with {}",
-            dst_name, src_name
+            "Please either delete the file {dst_name} or align the contents with {src_name}"
         )));
     }
 
@@ -150,7 +148,7 @@ fn setup_jobs(jobs: Option<u8>) -> eyre::Result<()> {
 
         if let Err(err) = pool {
             return Err(err)
-                .wrap_err(format!("Failed to create thread pool of size {}", jobs))
+                .wrap_err(format!("Failed to create thread pool of size {jobs}"))
                 .suggestion("Please try to decrease the number of jobs");
         }
     };
@@ -271,7 +269,7 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
                             None => path.clone(),
                             Some(strip) => path.strip_prefix(strip).unwrap().to_path_buf(),
                         };
-                        Some((print_path, format!("{}", err)))
+                        Some((print_path, format!("{err}")))
                     }
                 };
                 let (prefix, style) = match result {
