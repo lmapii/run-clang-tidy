@@ -76,6 +76,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      # Rustup update can fail on windows since it tries to replace its binary. This is not really
+      # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
+      - name: Disable rustup self-update
+        shell: bash
+        run: rustup set auto-self-update disable
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -125,6 +130,12 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           .github/setup/load_artifacts_windows.bat
+
+      # Rustup update can fail on windows since it tries to replace its binary. This is not really
+      # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
+      - name: Disable rustup self-update
+        shell: bash
+        run: rustup set auto-self-update disable
 
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
