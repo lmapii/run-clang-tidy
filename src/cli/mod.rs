@@ -76,7 +76,7 @@ pub struct Builder {
 }
 
 impl Builder {
-    fn app() -> clap::Command<'static> {
+    fn app() -> clap::Command {
         clap::Command::new(crate_name!())
             .arg_required_else_help(true)
             .version(crate_version!())
@@ -85,18 +85,16 @@ impl Builder {
             .arg(
                 arg!(<JSON>)
                     .help("Path/configuration as .json")
-                    // invalid UTF-8 characters must be allowed since we'll be using value_of_os
-                    // and paths do not necessarily only contain valid UTF-8 characters.
-                    .allow_invalid_utf8(true),
+                    .value_parser(clap::value_parser!(std::path::PathBuf)),
             )
             .arg(
                 arg!(-t --tidy ... "Optional path to the .clang-tidy configuration file. \
                                     Overrides <JSON> configuration. If no path is provided, \
                                     `clang-tidy` will attempt a search for the compile commands \
                                     through all parent paths of the file that is being analyzed.")
-                .allow_invalid_utf8(true)
-                .takes_value(true)
-                .required(false),
+                .value_parser(clap::value_parser!(std::path::PathBuf))
+                .required(false)
+                .action(clap::ArgAction::Set),
             )
             .arg(
                 clap::Arg::new("build-root")
@@ -107,38 +105,33 @@ impl Builder {
                          contain the compile-commands.json file. Overrides <JSON> \
                          configuration.",
                     )
-                    // cannot use hyphen for long as macro ...
-                    // arg!(-b --build-root ... "Help text.")
-                    .allow_invalid_utf8(true)
-                    .takes_value(true)
+                    .value_parser(clap::value_parser!(std::path::PathBuf))
+                    .action(clap::ArgAction::Set)
                     .required(false),
             )
             .arg(
                 arg!(-c --command ... "Optional path to executable or clang-tidy command. \
                                        Overrides <JSON> configuration, defaults to `clang-tidy`")
-                .allow_invalid_utf8(true)
-                .takes_value(true)
-                .required(false),
+                .value_parser(clap::value_parser!(std::path::PathBuf))
+                .required(false)
+                .action(clap::ArgAction::Set),
             )
             .arg(
                 arg!(-j --jobs ... "Optional parameter to define the number of jobs to use. \
                                     If provided without value (e.g., '-j') all available logical \
                                     cores are used. Maximum value is 255")
-                .default_value("1")
-                .takes_value(true)
-                .min_values(0)
-                .max_values(1)
-                .required(false),
+                .required(false)
+                .num_args(0..=1)
+                .action(clap::ArgAction::Set),
             )
-            .arg(
-                arg!(-v --verbose ... "Verbosity, use -vv... for verbose output.")
-                    .global(true)
-                    .multiple_values(false),
-            )
+            .arg(arg!(-v --verbose ... "Verbosity, use -vv... for verbose output.").global(true))
             // .arg(
             //     arg!(--fix "Fix findings on the fly if available."),
             // )
-            .arg(arg!(-q --quiet "Suppress all output except for errors; overrides -v"))
+            .arg(
+                arg!(-q --quiet "Suppress all output except for errors; overrides -v")
+                    .action(clap::ArgAction::SetTrue),
+            )
             .subcommand_negates_reqs(true)
             .subcommand(
                 clap::Command::new("schema")
@@ -164,7 +157,7 @@ impl Builder {
         let json_path = self.path_for_key("JSON", true)?;
         let json = JsonModel::load(json_path).wrap_err("Invalid parameter for <JSON>")?;
 
-        let tidy_file = match self.matches.is_present("tidy") {
+        let tidy_file = match self.matches.contains_id("tidy") {
             false => None,
             true => {
                 let tidy_path = self
@@ -176,7 +169,7 @@ impl Builder {
             }
         };
 
-        let command = match self.matches.value_of_os("command") {
+        let command = match self.matches.get_one::<std::path::PathBuf>("command") {
             None => None,
             Some(_) => Some(
                 utils::executable_or_exists(self.path_for_key("command", false)?, None)
@@ -189,7 +182,7 @@ impl Builder {
             ),
         };
 
-        let build_root = match self.matches.value_of_os("build-root") {
+        let build_root = match self.matches.get_one::<std::path::PathBuf>("build-root") {
             None => None,
             Some(_) => Some(
                 utils::dir_or_err(self.path_for_key("build-root", false)?)
@@ -201,19 +194,15 @@ impl Builder {
             ),
         };
 
-        // unwrap is safe to call since jobs has a default value
         let jobs = {
-            let mut val = self.matches.values_of("jobs").unwrap();
-            if val.len() == 0 {
-                None
-            } else {
+            if let Some(val) = self.matches.get_one::<String>("jobs") {
                 let val: u8 = val
-                    .next()
-                    .unwrap()
                     .parse()
                     .map_err(|_| eyre!("Invalid parameter for option --jobs"))
                     .suggestion("Please provide a number in the range [0 .. 255]")?;
                 Some(val)
+            } else {
+                None
             }
         };
 
@@ -229,7 +218,7 @@ impl Builder {
     fn path_for_key(&self, key: &str, check_exists: bool) -> eyre::Result<path::PathBuf> {
         let path = self
             .matches
-            .value_of_os(key)
+            .get_one::<std::path::PathBuf>(key)
             .map(std::path::PathBuf::from)
             .ok_or(eyre!(format!(
                 "Could not convert parameter '{key}' to path"
