@@ -17,7 +17,7 @@ jobs:
   rustfmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -31,7 +31,7 @@ jobs:
     # operating system dependent configurations (except case sensitivity setting)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -59,7 +59,7 @@ jobs:
         # alternatively matrix could be shared and specified via .json
         # see https://github.community/t/how-to-share-matrix-between-jobs/128595/8
         # ---
-          - { build: 'linux-x86_64-pinned',   os: 'ubuntu-18.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.68.2 }
+          - { build: 'linux-x86_64-pinned',   os: 'ubuntu-22.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.68.2 }
           - { build: 'windows-x86_64-pinned', os: 'windows-2019',   target: 'x86_64-pc-windows-msvc',        cross: false, rust: 1.68.2 }
           - { build: 'macos-x86_64-pinned',   os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: 1.68.2 }
           - { build: 'linux-x86_64',          os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false, rust: stable }
@@ -75,7 +75,7 @@ jobs:
         # - { build: 'windows-i686-mingw',    os: 'windows-latest', target: 'i686-pc-windows-gnu',           cross: false, rust: stable }
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       # Rustup update can fail on windows since it tries to replace its binary. This is not really
       # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
       - name: Disable rustup self-update
@@ -107,17 +107,17 @@ jobs:
       matrix:
         os:
           # testing on the real VMs only, not via CROSS
-          - ubuntu-18.04
+          - ubuntu-22.04
           - macos-latest
           - windows-latest
         toolchain:
           - stable
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install packages (ubuntu)
-        if: matrix.os == 'ubuntu-18.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           .github/setup/load_artifacts_ubuntu.sh
 
