@@ -44,6 +44,9 @@ jobs:
     name: Compile ${{ matrix.tuple.build }}
     needs: [rustfmt, clippy]
     runs-on: ${{ matrix.tuple.os }}
+    env:
+      TARGET_DIR: ./target
+      RUST_BACKTRACE: 1 # Emit backtraces on panics.
     strategy:
       fail-fast: false
       matrix:
@@ -59,28 +62,30 @@ jobs:
         # alternatively matrix could be shared and specified via .json
         # see https://github.community/t/how-to-share-matrix-between-jobs/128595/8
         # ---
-          - { build: 'linux-x86_64-pinned',   os: 'ubuntu-22.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.68.2 }
-          - { build: 'windows-x86_64-pinned', os: 'windows-2019',   target: 'x86_64-pc-windows-msvc',        cross: false, rust: 1.68.2 }
-          - { build: 'macos-x86_64-pinned',   os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: 1.68.2 }
-          - { build: 'linux-x86_64',          os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false, rust: stable }
-          - { build: 'linux-i686',            os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true,  rust: stable }
-          - { build: 'linux-arm',             os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true,  rust: stable } # aarch64
-        # - { build: 'ubuntu-armv7',          os: 'ubuntu-latest',  target: 'armv7-unknown-linux-gnueabihf', cross: true,  rust: stable } # armv7
-        # - { build: 'ubuntu-armv6',          os: 'ubuntu-latest',  target: 'arm-unknown-linux-gnueabihf',   cross: true,  rust: stable } # armv6
-          - { build: 'macos-x86_64',          os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: stable }
-        # - { build: 'macos-arm',             os: 'macos-latest',   target: 'aarch64-apple-darwin',          cross: true,  rust: stable } # arm (tier 2, not in cross)
-          - { build: 'windows-x86_64-msvc',   os: 'windows-latest', target: 'x86_64-pc-windows-msvc',        cross: false, rust: stable }
-          - { build: 'windows-i686-msvc',     os: 'windows-latest', target: 'i686-pc-windows-msvc',          cross: false, rust: stable }
-          - { build: 'windows-x86_64-mingw',  os: 'windows-latest', target: 'x86_64-pc-windows-gnu',         cross: false, rust: stable }
-        # - { build: 'windows-i686-mingw',    os: 'windows-latest', target: 'i686-pc-windows-gnu',           cross: false, rust: stable }
+          - { build: 'linux-x86_64-pinned',   os: 'ubuntu-22.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.68.2, archive: true  }
+          - { build: 'windows-x86_64-pinned', os: 'windows-2019',   target: 'x86_64-pc-windows-msvc',        cross: false, rust: 1.68.2, archive: true  }
+          - { build: 'macos-x86_64-pinned',   os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: 1.68.2, archive: true  }
+          - { build: 'linux-x86_64',          os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false, rust: stable, archive: false }
+          - { build: 'linux-i686',            os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true,  rust: stable, archive: false }
+          - { build: 'linux-arm',             os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true,  rust: stable, archive: false } # aarch64
+        # - { build: 'ubuntu-armv7',          os: 'ubuntu-latest',  target: 'armv7-unknown-linux-gnueabihf', cross: true,  rust: stable, archive: false } # armv7
+        # - { build: 'ubuntu-armv6',          os: 'ubuntu-latest',  target: 'arm-unknown-linux-gnueabihf',   cross: true,  rust: stable, archive: false } # armv6
+          - { build: 'macos-x86_64',          os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: stable, archive: false }
+        # - { build: 'macos-arm',             os: 'macos-latest',   target: 'aarch64-apple-darwin',          cross: true,  rust: stable, archive: false } # arm (tier 2, not in cross)
+          - { build: 'windows-x86_64-msvc',   os: 'windows-latest', target: 'x86_64-pc-windows-msvc',        cross: false, rust: stable, archive: false }
+          - { build: 'windows-i686-msvc',     os: 'windows-latest', target: 'i686-pc-windows-msvc',          cross: false, rust: stable, archive: false }
+          - { build: 'windows-x86_64-mingw',  os: 'windows-latest', target: 'x86_64-pc-windows-gnu',         cross: false, rust: stable, archive: false }
+        # - { build: 'windows-i686-mingw',    os: 'windows-latest', target: 'i686-pc-windows-gnu',           cross: false, rust: stable, archive: false }
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       # Rustup update can fail on windows since it tries to replace its binary. This is not really
       # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
+
       - name: Disable rustup self-update
         shell: bash
         run: rustup set auto-self-update disable
+
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -90,6 +95,7 @@ jobs:
           toolchain: ${{ matrix.tuple.rust }}
           override: true
           target: ${{ matrix.tuple.target }}
+
       - name: Check
         uses: actions-rs/cargo@v1
         with:
@@ -97,6 +103,43 @@ jobs:
           # this specifies the target to use for cross compilation (must exist in rustup)
           args: --verbose --target=${{ matrix.tuple.target }}
           use-cross: ${{ matrix.tuple.cross }}
+
+      - name: Build artifact
+        uses: actions-rs/cargo@v1
+        if: matrix.tuple.archive != false && github.event_name == 'pull_request'
+        with:
+          command: build
+          args: --release --target=${{ matrix.tuple.target }}
+          use-cross: ${{ matrix.tuple.cross }}
+        env:
+          CI_PKG_VERSION_PRE_RELEASE: --alpha
+          CI_PKG_VERSION_BUILD: ${{ github.run_number }}
+
+      - name: Archive
+        if: matrix.tuple.archive != false && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          staging="run-clang-tidy-build-${{github.run_number}}-${{ matrix.tuple.target }}"
+          mkdir -p "$staging"
+
+          cp {readme.md,LICENSE} "$staging/"
+
+          if [ "${{ matrix.tuple.os }}" = "windows-latest" ]; then
+            cp "target/${{ matrix.tuple.target }}/release/run-clang-tidy.exe" "$staging/"
+            7z a "$staging.zip" "$staging"
+            echo "ASSET=$staging.zip" >> $GITHUB_ENV
+          else
+            cp "target/${{ matrix.tuple.target }}/release/run-clang-tidy" "$staging/"
+            tar czf "$staging.tar.gz" "$staging"
+            echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+          fi
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        if: matrix.tuple.archive != false && github.event_name == 'pull_request'
+        with:
+          name: dist-${{github.run_number}}-${{ matrix.tuple.target }}
+          path: ${{ env.ASSET }}
 
   tests:
     name: Test ${{ matrix.os }}
@@ -144,6 +187,6 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           override: true
 
-      - name: Test
+      - name: Run tests
         # using only one test thread to avoid race conditions on temporary files
         run: cargo test --verbose --no-fail-fast -- --test-threads 1

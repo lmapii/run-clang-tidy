@@ -41,6 +41,7 @@ Execute `run-clang-tidy --help` for more details, or `run-clang-tidy schema` for
   - [Speeding up the execution](#speeding-up-the-execution)
   - [Specifying an alternative tidy file and command](#specifying-an-alternative-tidy-file-and-command)
   - [Specifying an alternative build root](#specifying-an-alternative-build-root)
+  - [Suppressing warnings](#suppressing-warnings)
 - [Use-cases](#use-cases)
 - [Pitfalls](#pitfalls)
   - [Multiple `.clang-tidy` files](#multiple-clang-tidy-files)
@@ -299,6 +300,12 @@ The command-line options `--tidy` and `--command` allow specifying a `.clang-tid
 The [build root](#the-build-root-and-compile_commandsjson) containing the compilation database is typically not fixed; each build might use a different output folder and tools may be installed in different directories (e.g., if executed as part of a CI chain).
 
 Therefore the command-line option `--build-root` allows to specify the build directory when invoking this script, overriding, e.g., a default directory specified in the configuration `.json` file.
+
+## Suppressing warnings
+
+By default, warnings issued by `clang-tidy` are output on each run, unless the command-line option `--suppress-warnings` is used.
+
+> **Remark:** `clang-tidy` warnings do not affect the return code of `run-clang-tidy`, regardless of whether or not they are part of the output. Use your `.clang-tidy` file to transform warnings into errors in case the execution should fail, e.g., by specifying `WarningsAsErrors`.
 
 # Use-cases
 
