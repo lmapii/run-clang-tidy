@@ -106,17 +106,20 @@ jobs:
 
       - name: Build artifact
         uses: actions-rs/cargo@v1
-        if: matrix.archive != false && github.event_name == 'pull_request'
+        if: matrix.tuple.archive != false && github.event_name == 'pull_request'
         with:
           command: build
           args: --release --target=${{ matrix.tuple.target }}
           use-cross: ${{ matrix.tuple.cross }}
+        env:
+          CI_PKG_VERSION_PRE_RELEASE: --alpha
+          CI_PKG_VERSION_BUILD: ${{ github.run_number }}
 
       - name: Archive
-        if: matrix.archive != false && github.event_name == 'pull_request'
+        if: matrix.tuple.archive != false && github.event_name == 'pull_request'
         shell: bash
         run: |
-          staging="run-clang-tidy-${{github.run_number}}-${{ matrix.tuple.target }}"
+          staging="run-clang-tidy-build-${{github.run_number}}-${{ matrix.tuple.target }}"
           mkdir -p "$staging"
 
           cp {readme.md,LICENSE} "$staging/"
@@ -133,7 +136,7 @@ jobs:
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
-        if: matrix.archive != false && github.event_name == 'pull_request'
+        if: matrix.tuple.archive != false && github.event_name == 'pull_request'
         with:
           name: dist-${{github.run_number}}-${{ matrix.tuple.target }}
           path: ${{ env.ASSET }}

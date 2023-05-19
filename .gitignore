@@ -16,3 +16,4 @@ artifacts
 docker
 
 _bld
+.cargo/config.toml
