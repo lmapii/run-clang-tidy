@@ -26,171 +26,94 @@ jobs:
           components: rustfmt
       - run: cargo fmt --all -- --check
 
-  # clippy:
-  #   # should be fine to run clippy only on one platform since there aren't many
-  #   # operating system dependent configurations (except case sensitivity setting)
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: stable
-  #         override: true
-  #         components: clippy
-  #     - run: cargo clippy --all-targets --workspace -- -D warnings
+  clippy:
+    # should be fine to run clippy only on one platform since there aren't many
+    # operating system dependent configurations (except case sensitivity setting)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy
+      - run: cargo clippy --all-targets --workspace -- -D warnings
 
-  # compile:
-  #   name: Compile ${{ matrix.tuple.build }}
-  #   needs: [rustfmt, clippy]
-  #   runs-on: ${{ matrix.tuple.os }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       tuple:
-  #       # available VMs are documented here:
-  #       # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
-  #       # though it is not very visible what the actual architecture is, and therefore it is not
-  #       # clear whether or not cross can/needs to be used.
-  #       # ---
-  #       # see https://doc.rust-lang.org/nightly/rustc/platform-support.html for platform support / tiers
-  #       # see https://github.com/cross-rs/cross#supported-targets for supported targets in cross
-  #       # ---
-  #       # alternatively matrix could be shared and specified via .json
-  #       # see https://github.community/t/how-to-share-matrix-between-jobs/128595/8
-  #       # ---
-  #         - { build: 'linux-x86_64-pinned',   os: 'ubuntu-22.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.68.2 }
-  #         - { build: 'windows-x86_64-pinned', os: 'windows-2019',   target: 'x86_64-pc-windows-msvc',        cross: false, rust: 1.68.2 }
-  #         - { build: 'macos-x86_64-pinned',   os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: 1.68.2 }
-  #         - { build: 'linux-x86_64',          os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false, rust: stable }
-  #         - { build: 'linux-i686',            os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true,  rust: stable }
-  #         - { build: 'linux-arm',             os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true,  rust: stable } # aarch64
-  #       # - { build: 'ubuntu-armv7',          os: 'ubuntu-latest',  target: 'armv7-unknown-linux-gnueabihf', cross: true,  rust: stable } # armv7
-  #       # - { build: 'ubuntu-armv6',          os: 'ubuntu-latest',  target: 'arm-unknown-linux-gnueabihf',   cross: true,  rust: stable } # armv6
-  #         - { build: 'macos-x86_64',          os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: stable }
-  #       # - { build: 'macos-arm',             os: 'macos-latest',   target: 'aarch64-apple-darwin',          cross: true,  rust: stable } # arm (tier 2, not in cross)
-  #         - { build: 'windows-x86_64-msvc',   os: 'windows-latest', target: 'x86_64-pc-windows-msvc',        cross: false, rust: stable }
-  #         - { build: 'windows-i686-msvc',     os: 'windows-latest', target: 'i686-pc-windows-msvc',          cross: false, rust: stable }
-  #         - { build: 'windows-x86_64-mingw',  os: 'windows-latest', target: 'x86_64-pc-windows-gnu',         cross: false, rust: stable }
-  #       # - { build: 'windows-i686-mingw',    os: 'windows-latest', target: 'i686-pc-windows-gnu',           cross: false, rust: stable }
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-  #     # Rustup update can fail on windows since it tries to replace its binary. This is not really
-  #     # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
-  #     - name: Disable rustup self-update
-  #       shell: bash
-  #       run: rustup set auto-self-update disable
-  #     - name: Install toolchain
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         # https://github.com/actions-rs/toolchain
-  #         # this specifies the rustup toolchain
-  #         profile: minimal
-  #         toolchain: ${{ matrix.tuple.rust }}
-  #         override: true
-  #         target: ${{ matrix.tuple.target }}
-  #     - name: Check
-  #       uses: actions-rs/cargo@v1
-  #       with:
-  #         command: check
-  #         # this specifies the target to use for cross compilation (must exist in rustup)
-  #         args: --verbose --target=${{ matrix.tuple.target }}
-  #         use-cross: ${{ matrix.tuple.cross }}
-
-  # tests:
-  #   name: Test ${{ matrix.os }}
-  #   needs: [compile]
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os:
-  #         # testing on the real VMs only, not via CROSS
-  #         - ubuntu-22.04
-  #         - macos-latest
-  #         - windows-latest
-  #       toolchain:
-  #         - stable
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-
-  #     - name: Install packages (ubuntu)
-  #       if: matrix.os == 'ubuntu-22.04'
-  #       run: |
-  #         .github/setup/load_artifacts_ubuntu.sh
-
-  #     - name: Install packages (macos)
-  #       if: matrix.os == 'macos-latest'
-  #       run: |
-  #         .github/setup/load_artifacts_macos.sh
-
-  #     - name: Install packages (windows)
-  #       if: matrix.os == 'windows-latest'
-  #       run: |
-  #         .github/setup/load_artifacts_windows.bat
-
-  #     # Rustup update can fail on windows since it tries to replace its binary. This is not really
-  #     # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
-  #     - name: Disable rustup self-update
-  #       shell: bash
-  #       run: rustup set auto-self-update disable
-
-  #     - name: Install toolchain
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: ${{ matrix.toolchain }}
-  #         override: true
-
-  #     - name: Run tests
-  #       # using only one test thread to avoid race conditions on temporary files
-  #       run: cargo test --verbose --no-fail-fast -- --test-threads 1
-
-  build-artifacts:
-    name: build-artifacts
+  compile:
+    name: Compile ${{ matrix.tuple.build }}
+    needs: [rustfmt, clippy]
     runs-on: ${{ matrix.tuple.os }}
     env:
       TARGET_DIR: ./target
       RUST_BACKTRACE: 1 # Emit backtraces on panics.
     strategy:
+      fail-fast: false
       matrix:
         tuple:
-          - { build: 'linux-x86_64',         os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false }
-          # - { build: 'linux-i686',           os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true  }
-          # - { build: 'linux-arm',            os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true  } # aarch64
-        # - { build: 'linux-armv7',          os: 'ubuntu-latest',  target: 'armv7-unknown-linux-gnueabihf', cross: true  } # armv7
-        # - { build: 'linux-armv6',          os: 'ubuntu-latest',  target: 'arm-unknown-linux-gnueabihf',   cross: true  } # armv6
-          - { build: 'macos-x86_64',         os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false }
-        # - { build: 'macos-arm',            os: 'macos-latest',   target: 'aarch64-apple-darwin',          cross: true  } # arm
-          # - { build: 'windows-x86_64-msvc',  os: 'windows-latest', target: 'x86_64-pc-windows-msvc',        cross: false }
-          # - { build: 'windows-i686-msvc',    os: 'windows-latest', target: 'i686-pc-windows-msvc',          cross: false }
-          # - { build: 'windows-x86_64-mingw', os: 'windows-latest', target: 'x86_64-pc-windows-gnu',         cross: false }
-        toolchain:
-          - stable
+        # available VMs are documented here:
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+        # though it is not very visible what the actual architecture is, and therefore it is not
+        # clear whether or not cross can/needs to be used.
+        # ---
+        # see https://doc.rust-lang.org/nightly/rustc/platform-support.html for platform support / tiers
+        # see https://github.com/cross-rs/cross#supported-targets for supported targets in cross
+        # ---
+        # alternatively matrix could be shared and specified via .json
+        # see https://github.community/t/how-to-share-matrix-between-jobs/128595/8
+        # ---
+          - { build: 'linux-x86_64-pinned',   os: 'ubuntu-22.04',   target: 'x86_64-unknown-linux-gnu',      cross: false, rust: 1.68.2, archive: true  }
+          - { build: 'windows-x86_64-pinned', os: 'windows-2019',   target: 'x86_64-pc-windows-msvc',        cross: false, rust: 1.68.2, archive: true  }
+          - { build: 'macos-x86_64-pinned',   os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: 1.68.2, archive: true  }
+          - { build: 'linux-x86_64',          os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false, rust: stable, archive: false }
+          - { build: 'linux-i686',            os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true,  rust: stable, archive: false }
+          - { build: 'linux-arm',             os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true,  rust: stable, archive: false } # aarch64
+        # - { build: 'ubuntu-armv7',          os: 'ubuntu-latest',  target: 'armv7-unknown-linux-gnueabihf', cross: true,  rust: stable, archive: false } # armv7
+        # - { build: 'ubuntu-armv6',          os: 'ubuntu-latest',  target: 'arm-unknown-linux-gnueabihf',   cross: true,  rust: stable, archive: false } # armv6
+          - { build: 'macos-x86_64',          os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false, rust: stable, archive: false }
+        # - { build: 'macos-arm',             os: 'macos-latest',   target: 'aarch64-apple-darwin',          cross: true,  rust: stable, archive: false } # arm (tier 2, not in cross)
+          - { build: 'windows-x86_64-msvc',   os: 'windows-latest', target: 'x86_64-pc-windows-msvc',        cross: false, rust: stable, archive: false }
+          - { build: 'windows-i686-msvc',     os: 'windows-latest', target: 'i686-pc-windows-msvc',          cross: false, rust: stable, archive: false }
+          - { build: 'windows-x86_64-mingw',  os: 'windows-latest', target: 'x86_64-pc-windows-gnu',         cross: false, rust: stable, archive: false }
+        # - { build: 'windows-i686-mingw',    os: 'windows-latest', target: 'i686-pc-windows-gnu',           cross: false, rust: stable, archive: false }
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
+      # Rustup update can fail on windows since it tries to replace its binary. This is not really
+      # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
+
+      - name: Disable rustup self-update
+        shell: bash
+        run: rustup set auto-self-update disable
 
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
         with:
-            profile: minimal
-            toolchain: ${{ matrix.toolchain }}
-            override: true
-            target: ${{ matrix.tuple.target }}
+          # https://github.com/actions-rs/toolchain
+          # this specifies the rustup toolchain
+          profile: minimal
+          toolchain: ${{ matrix.tuple.rust }}
+          override: true
+          target: ${{ matrix.tuple.target }}
 
-      - name: Build
+      - name: Check
         uses: actions-rs/cargo@v1
+        with:
+          command: check
+          # this specifies the target to use for cross compilation (must exist in rustup)
+          args: --verbose --target=${{ matrix.tuple.target }}
+          use-cross: ${{ matrix.tuple.cross }}
+
+      - name: Build artifact
+        uses: actions-rs/cargo@v1
+        if: matrix.archive
         with:
           command: build
           args: --release --target=${{ matrix.tuple.target }}
           use-cross: ${{ matrix.tuple.cross }}
 
       - name: Archive
+        if: matrix.archive
         shell: bash
         run: |
           staging="run-clang-tidy-${{github.run_number}}-${{ matrix.tuple.target }}"
@@ -210,6 +133,57 @@ jobs:
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
+        if: matrix.archive
         with:
           name: dist-${{github.run_number}}-${{ matrix.tuple.target }}
           path: ${{ env.ASSET }}
+
+  tests:
+    name: Test ${{ matrix.os }}
+    needs: [compile]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          # testing on the real VMs only, not via CROSS
+          - ubuntu-22.04
+          - macos-latest
+          - windows-latest
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install packages (ubuntu)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          .github/setup/load_artifacts_ubuntu.sh
+
+      - name: Install packages (macos)
+        if: matrix.os == 'macos-latest'
+        run: |
+          .github/setup/load_artifacts_macos.sh
+
+      - name: Install packages (windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          .github/setup/load_artifacts_windows.bat
+
+      # Rustup update can fail on windows since it tries to replace its binary. This is not really
+      # needed anyhow. https://github.com/rust-lang/rustup/issues/3029
+      - name: Disable rustup self-update
+        shell: bash
+        run: rustup set auto-self-update disable
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+
+      - name: Run tests
+        # using only one test thread to avoid race conditions on temporary files
+        run: cargo test --verbose --no-fail-fast -- --test-threads 1
