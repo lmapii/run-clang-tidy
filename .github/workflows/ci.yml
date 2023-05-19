@@ -106,14 +106,14 @@ jobs:
 
       - name: Build artifact
         uses: actions-rs/cargo@v1
-        if: matrix.archive
+        if: matrix.archive != false && github.event_name == 'pull_request'
         with:
           command: build
           args: --release --target=${{ matrix.tuple.target }}
           use-cross: ${{ matrix.tuple.cross }}
 
       - name: Archive
-        if: matrix.archive
+        if: matrix.archive != false && github.event_name == 'pull_request'
         shell: bash
         run: |
           staging="run-clang-tidy-${{github.run_number}}-${{ matrix.tuple.target }}"
@@ -133,7 +133,7 @@ jobs:
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
-        if: matrix.archive
+        if: matrix.archive != false && github.event_name == 'pull_request'
         with:
           name: dist-${{github.run_number}}-${{ matrix.tuple.target }}
           path: ${{ env.ASSET }}
