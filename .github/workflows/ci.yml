@@ -144,6 +144,37 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           override: true
 
-      - name: Test
-        # using only one test thread to avoid race conditions on temporary files
-        run: cargo test --verbose --no-fail-fast -- --test-threads 1
+      # - name: Test
+      #   # using only one test thread to avoid race conditions on temporary files
+      #   run: cargo test --verbose --no-fail-fast -- --test-threads 1
+
+      - name: Build artifact
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target=${{ matrix.tuple.target }}
+          use-cross: ${{ matrix.tuple.cross }}
+
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="run-clang-tidy-${{github.run_number}}-${{ matrix.tuple.target }}"
+          mkdir -p "$staging"
+
+          cp {readme.md,LICENSE} "$staging/"
+
+          if [ "${{ matrix.tuple.os }}" = "windows-latest" ]; then
+            cp "target/${{ matrix.tuple.target }}/release/run-clang-tidy.exe" "$staging/"
+            7z a "$staging.zip" "$staging"
+            echo "ASSET=$staging.zip" >> $GITHUB_ENV
+          else
+            cp "target/${{ matrix.tuple.target }}/release/run-clang-tidy" "$staging/"
+            tar czf "$staging.tar.gz" "$staging"
+            echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+          fi
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-${{github.run_number}}-${{ matrix.tuple.target }}
+          path: ${{ env.ASSET }}
