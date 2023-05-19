@@ -7,6 +7,19 @@ struct Version {
     patch: u8,
 }
 
+#[derive(Debug)]
+pub enum RunResult {
+    Ok,
+    Err(String),
+    Warn(String),
+}
+
+impl From<&io::Error> for RunResult {
+    fn from(value: &io::Error) -> Self {
+        RunResult::Err(value.to_string())
+    }
+}
+
 impl FromStr for Version {
     type Err = String;
 
@@ -91,29 +104,28 @@ impl Runner {
         Ok(())
     }
 
-    fn run(mut cmd: process::Command) -> Result<(), io::Error> {
-        let output = cmd.output()?;
+    fn run(mut cmd: process::Command, ignore_warn: bool) -> RunResult {
+        let output = cmd.output();
+        if let Err(err) = &output {
+            return err.into();
+        }
+        let output = output.unwrap();
+
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
 
         if let Err(err) = Runner::eval_status(output.status) {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            let stdout = String::from_utf8_lossy(&output.stdout);
-
             if stderr.len() != 0 {
-                // log::error!("{}", stderr);
-                // log::info!("{}", stdout);
-
-                return Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("{err}\n---\n{stderr}---\n{stdout}"),
-                    // format!("{}\n---\n{}", err, stdout),
-                ));
+                return RunResult::Err(format!("{err}\n---\n{stderr}---\n{stdout}"));
             }
-            return Err(err);
+            return (&err).into();
+        } else if !ignore_warn && !stderr.is_empty() {
+            return RunResult::Warn(format!("warnings encountered\n---\n{stderr}---\n{stdout}"));
         }
-        Ok(())
+        RunResult::Ok
     }
 
-    pub fn run_tidy<P, Q>(&self, file: P, build_root: Q, fix: bool) -> Result<(), io::Error>
+    pub fn run_tidy<P, Q>(&self, file: P, build_root: Q, fix: bool, ignore_warn: bool) -> RunResult
     where
         P: AsRef<path::Path>,
         Q: AsRef<path::Path>,
@@ -135,7 +147,7 @@ impl Runner {
         // This suppresses printing statistics about ignored warnings:
         // cmd.arg("-quiet");
 
-        Runner::run(cmd)
+        Runner::run(cmd, ignore_warn)
     }
 
     pub fn supports_config_file(&self) -> Result<(), io::Error> {

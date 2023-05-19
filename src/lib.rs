@@ -19,6 +19,11 @@ pub struct JsonModel {
     pub style: Option<path::PathBuf>,
 }
 
+enum Dump {
+    Error { msg: String, path: path::PathBuf },
+    Warning { msg: String, path: path::PathBuf },
+}
+
 fn log_pretty() -> bool {
     // fancy logging using indicatif is only done for log level "info". when debugging we
     // do not use a progress bar, if info is not enabled at all ("quiet") then the progress
@@ -55,7 +60,7 @@ fn get_command(data: &cli::Data) -> eyre::Result<cmd::Runner> {
     cmd.validate()
         .wrap_err(format!(
             "Failed to execute the specified command '{}'",
-            cmd_path.to_string_lossy()
+            cmd_path.display()
         ))
         .suggestion(format!(
             "Please make sure that the command '{}' exists or is in your search path",
@@ -85,8 +90,8 @@ fn place_tidy_file(
     // in such a case we provide feedback by comparing the file contents and abort with an error
     // if they do not match.
     if dst_file.exists() {
-        let src_name = src_file.to_string_lossy();
-        let dst_name = dst_file.to_string_lossy();
+        let src_name = src_file.display();
+        let dst_name = dst_file.display();
 
         log::warn!("Encountered existing tidy file {}", dst_name);
 
@@ -257,58 +262,64 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
     }
     let paths: Vec<_> = paths.collect();
 
-    let result: eyre::Result<()> = {
-        let failures: Vec<_> = paths
+    let (failures, warnings) = {
+        let dump: Vec<_> = paths
             .into_par_iter()
             .map(|path| {
                 // TODO: specify --fix
-                let result = match cmd.run_tidy(&path, &build_root, false) {
-                    Ok(_) => None,
-                    Err(err) => {
-                        let print_path = match &strip_root {
-                            None => path.clone(),
-                            Some(strip) => path.strip_prefix(strip).unwrap().to_path_buf(),
-                        };
-                        Some((print_path, format!("{err}")))
-                    }
+                let result = cmd.run_tidy(&path, &build_root, false, data.ignore_warn);
+                let strip_path = match &strip_root {
+                    None => path.clone(),
+                    Some(strip) => path.strip_prefix(strip).unwrap().to_path_buf(),
                 };
+
+                // step log output
                 let (prefix, style) = match result {
-                    Some(_) => ("Error", console::Style::new().red().bold()),
-                    None => ("Ok", console::Style::new().green().bold()),
+                    cmd::RunResult::Ok => ("Ok", console::Style::new().green().bold()),
+                    cmd::RunResult::Err(_) => ("Error", console::Style::new().red().bold()),
+                    cmd::RunResult::Warn(_) => {
+                        ("Warning", console::Style::new().color256(58).bold())
+                    }
                 };
                 log_step(prefix, path.as_path(), &strip_root, &pb, style);
-                if let Some(err) = &result {
-                    if !log_pretty() {
-                        log::error!("{}", err.1);
+
+                // collection
+                match result {
+                    cmd::RunResult::Ok => None,
+                    cmd::RunResult::Err(msg) => {
+                        if !log_pretty() {
+                            log::error!("{}", msg);
+                        }
+                        Some(Dump::Error {
+                            msg,
+                            path: strip_path,
+                        })
+                    }
+                    cmd::RunResult::Warn(msg) => {
+                        if !log_pretty() {
+                            log::warn!("{}", msg);
+                        }
+                        Some(Dump::Warning {
+                            msg,
+                            path: strip_path,
+                        })
                     }
                 }
-                result
             })
             .flatten()
             .collect();
 
-        if !failures.is_empty() {
-            Err(eyre::eyre!(format!(
-                "Execution failed for the following files:\n{}\n ",
-                failures
-                    .into_iter()
-                    .map(|result| {
-                        // let style = console::Style::new().red().bold();
-                        let style = console::Style::new().white().bold().on_red();
-                        format!(
-                            "{}\n{}",
-                            style.apply_to(result.0.to_string_lossy()),
-                            result.1,
-                        )
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            )))
-        } else {
-            Ok(())
-        }
+        let mut failures = Vec::with_capacity(dump.len());
+        let mut warnings: Vec<_> = vec![];
+
+        dump.into_iter().for_each(|item| {
+            match item {
+                Dump::Error { msg, path } => failures.push((path, msg)),
+                Dump::Warning { msg, path } => warnings.push((path, msg)),
+            };
+        });
+        (failures, warnings)
     };
-    result?;
 
     let duration = start.elapsed();
     if log_pretty() {
@@ -323,7 +334,39 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
         log::info!("{} Finished in {:#?}", step.next(), duration);
     }
 
-    Ok(())
+    fn collect_dump(items: Vec<(path::PathBuf, String)>, style: console::Style) -> String {
+        items
+            .into_iter()
+            .map(|result| {
+                format!(
+                    "{}\n{}",
+                    style.apply_to(result.0.to_string_lossy()),
+                    result.1,
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    if !warnings.is_empty() {
+        log::warn!(
+            "\n\nWarnings have been issued for the following files:\n\n{} ",
+            collect_dump(
+                warnings,
+                console::Style::new().white().bold().on_color256(58)
+            )
+            .trim_end()
+        );
+    }
+
+    if !failures.is_empty() {
+        Err(eyre::eyre!(format!(
+            "Execution failed for the following files:\n{}\n ",
+            collect_dump(failures, console::Style::new().white().bold().on_red()).trim_end()
+        )))
+    } else {
+        Ok(())
+    }
 }
 
 fn log_step(

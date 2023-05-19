@@ -4,7 +4,7 @@ mod handlers;
 mod logging;
 pub mod utils;
 
-use clap::{arg, crate_authors, crate_description, crate_name, crate_version};
+use clap::{arg, crate_authors, crate_description, crate_name, crate_version, Arg};
 #[allow(unused_imports)]
 use color_eyre::{eyre::eyre, eyre::WrapErr, Help};
 use schemars::{schema_for, JsonSchema};
@@ -69,6 +69,8 @@ pub struct Data {
     /// Command-line parameter for the number of jobs to use for executing clang-tidy
     /// If `None` then all available jobs should be used, else the specified number of jobs.
     pub jobs: Option<u8>,
+    /// Command-line option to suppress warnings issued by clang-tidy.
+    pub ignore_warn: bool,
 }
 
 pub struct Builder {
@@ -131,6 +133,12 @@ impl Builder {
             .arg(
                 arg!(-q --quiet "Suppress all output except for errors; overrides -v")
                     .action(clap::ArgAction::SetTrue),
+            )
+            .arg(
+                Arg::new("suppress-warnings")
+                    .long("suppress-warnings")
+                    .action(clap::ArgAction::SetTrue)
+                    .help("Suppress warnings; overrides -v"),
             )
             .subcommand_negates_reqs(true)
             .subcommand(
@@ -212,6 +220,7 @@ impl Builder {
             build_root,
             command,
             jobs,
+            ignore_warn: self.matches.get_flag("suppress-warnings"),
         })
     }
 
