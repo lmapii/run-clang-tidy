@@ -5,9 +5,9 @@ name: release
 
 on:
   push:
-    # Enable when testing release infrastructure on a branch.
-    branches:
-    - feature/remove-actions-rs
+    # # Enable when testing release infrastructure on a branch.
+    # branches:
+    # - feature/remove-actions-rs
     tags:
     - "v[0-9]+.[0-9]+.[0-9]+"
 
@@ -15,10 +15,9 @@ jobs:
   create-release:
     name: create-release
     runs-on: ubuntu-latest
-    # TODO: revert
-    env:
-      # Set to force a version number, e.g., when no tag exists (testing on a branch)
-      APP_VERSION: v255.255.255
+    # env:
+    #   # Set to force a version number, e.g., when no tag exists (testing on a branch)
+    #   APP_VERSION: v255.255.255
     outputs:
       # create an output release from future step (by id)
       upload_url: ${{ steps.release.outputs.upload_url }}
