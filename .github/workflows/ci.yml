@@ -41,8 +41,8 @@ jobs:
     needs: [rustfmt, clippy]
     runs-on: ${{ matrix.tuple.os }}
     env:
-      TARGET_DIR: ./target
-      RUST_BACKTRACE: 1 # Emit backtraces on panics.
+      # For some checks&builds we use cross instead of cargo.
+      CARGO: cargo
     strategy:
       fail-fast: false
       matrix:
@@ -90,24 +90,25 @@ jobs:
           toolchain: ${{ matrix.tuple.rust }}
           target: ${{ matrix.tuple.target }}
 
+      - name: Install cross
+        if: matrix.tuple.cross != false
+        run: |
+          cargo install cross
+          echo "CARGO=cross" >> $GITHUB_ENV
+
       - name: Check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          # this specifies the target to use for cross compilation (must exist in rustup)
-          args: --verbose --target=${{ matrix.tuple.target }}
-          use-cross: ${{ matrix.tuple.cross }}
+        run: |
+          echo "cargo command is: ${{ env.CARGO }}"
+          # this runs check for the target to use for (cross) compilation (must exist in rustup)
+          ${{ env.CARGO }} check --verbose --target=${{ matrix.tuple.target }}
 
       - name: Build artifact
-        uses: actions-rs/cargo@v1
         if: matrix.tuple.archive != false && github.event_name == 'pull_request'
-        with:
-          command: build
-          args: --release --target=${{ matrix.tuple.target }}
-          use-cross: ${{ matrix.tuple.cross }}
         env:
           CI_PKG_VERSION_PRE_RELEASE: --alpha
           CI_PKG_VERSION_BUILD: ${{ github.run_number }}
+        run: |
+          ${{ env.CARGO }} build --release --target=${{ matrix.tuple.target }}
 
       - name: Archive
         if: matrix.tuple.archive != false && github.event_name == 'pull_request'
