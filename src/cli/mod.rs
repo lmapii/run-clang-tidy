@@ -71,6 +71,8 @@ pub struct Data {
     pub jobs: Option<u8>,
     /// Command-line option to suppress warnings issued by clang-tidy.
     pub ignore_warn: bool,
+    /// Suppress all logging.
+    pub quiet: bool,
 }
 
 pub struct Builder {
@@ -221,6 +223,8 @@ impl Builder {
             command,
             jobs,
             ignore_warn: self.matches.get_flag("suppress-warnings"),
+            // TODO: replace quiet flag with own logger implementation.
+            quiet: self.matches.get_flag("quiet"),
         })
     }
 

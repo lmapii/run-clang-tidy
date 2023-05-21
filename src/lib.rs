@@ -287,7 +287,7 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
                 match result {
                     cmd::RunResult::Ok => None,
                     cmd::RunResult::Err(msg) => {
-                        if !log_pretty() {
+                        if !log_pretty() && !data.quiet {
                             log::error!("{}", msg);
                         }
                         Some(Dump::Error {
