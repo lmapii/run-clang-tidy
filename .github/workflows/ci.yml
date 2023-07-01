@@ -135,6 +135,7 @@ jobs:
         with:
           name: dist-${{github.run_number}}-${{ matrix.tuple.target }}
           path: ${{ env.ASSET }}
+          retention-days: 7
 
   tests:
     name: Test ${{ matrix.os }}
