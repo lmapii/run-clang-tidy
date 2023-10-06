@@ -51,7 +51,7 @@ impl Runner {
 
     fn eval_status(status: process::ExitStatus) -> Result<(), io::Error> {
         match status.code() {
-            Some(code) if code == 0 => (),
+            Some(0) => (),
             Some(code) => {
                 return Err(io::Error::new(
                     io::ErrorKind::Other,

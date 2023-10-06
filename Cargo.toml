@@ -1,6 +1,6 @@
 [package]
 name = "run-clang-tidy"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Martin Lampacher <lmapii@gmail.com>"]
 description = """
 Cross platform CLI wrapper for executing clang-tidy based paths or globs specified
