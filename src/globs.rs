@@ -56,10 +56,29 @@ where
 {
     let (paths, filtered) = globmatch::wrappers::match_paths(candidates, filter, filter_post);
 
+    log::debug!(
+        "paths \n{}",
+        paths
+            .iter()
+            .map(|p| format!("{}", p.canonicalize().unwrap().to_string_lossy()))
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
+
+    if !filtered.is_empty() {
+        log::debug!(
+            "filtered \n{}",
+            filtered
+                .iter()
+                .map(|p| format!("{}", p.canonicalize().unwrap().to_string_lossy()))
+                .collect::<Vec<_>>()
+                .join("\n")
+        );
+    }
+
     let paths = paths
         .into_iter()
         .filter(|path| path.as_path().is_file())
         .collect(); // accept only files
-
     (paths, filtered)
 }
