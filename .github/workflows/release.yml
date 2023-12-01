@@ -5,9 +5,9 @@ name: release
 
 on:
   push:
-    # # Enable when testing release infrastructure on a branch.
-    # branches:
-    # - feature/remove-actions-rs
+    # Enable when testing release infrastructure on a branch.
+    branches:
+    - feature/update-gh-release
     tags:
     - "v[0-9]+.[0-9]+.[0-9]+"
 
@@ -15,9 +15,9 @@ jobs:
   create-release:
     name: create-release
     runs-on: ubuntu-latest
-    # env:
-    #   # Set to force a version number, e.g., when no tag exists (testing on a branch)
-    #   APP_VERSION: v255.255.255
+    env:
+      # Set to force a version number, e.g., when no tag exists (testing on a branch)
+      APP_VERSION: v255.255.255
     outputs:
       # create an output release from future step (by id)
       upload_url: ${{ steps.release.outputs.upload_url }}
@@ -115,11 +115,11 @@ jobs:
           fi
 
       - name: Upload release archive
-        uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ${{ env.ASSET }}
-          asset_name: ${{ env.ASSET }}
-          asset_content_type: application/octet-stream
+        shell: bash
+        run: |
+          cd "$DEB_DIR"
+          version="${{ needs.create-release.outputs.app_version }}"
+          asset="${{ env.ASSET }}"
+          gh release upload "$version" "$asset" "$SUM"
