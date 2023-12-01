@@ -119,7 +119,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          cd "$DEB_DIR"
           version="${{ needs.create-release.outputs.app_version }}"
           asset="${{ env.ASSET }}"
           gh release upload "$version" "$asset" "$SUM"
