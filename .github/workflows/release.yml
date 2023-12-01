@@ -119,6 +119,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          version="${{ needs.create-release.outputs.app_version }}"
-          asset="${{ env.ASSET }}"
-          gh release upload "$version" "$asset" "$SUM"
+          gh release upload ${{ needs.create-release.outputs.app_version }} ${{ env.ASSET }}
