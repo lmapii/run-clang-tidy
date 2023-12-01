@@ -7,7 +7,7 @@ on:
   push:
     # # Enable when testing release infrastructure on a branch.
     # branches:
-    # - feature/remove-actions-rs
+    # - feature/update-gh-release
     tags:
     - "v[0-9]+.[0-9]+.[0-9]+"
 
@@ -115,11 +115,8 @@ jobs:
           fi
 
       - name: Upload release archive
-        uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ${{ env.ASSET }}
-          asset_name: ${{ env.ASSET }}
-          asset_content_type: application/octet-stream
+        shell: bash
+        run: |
+          gh release upload ${{ needs.create-release.outputs.app_version }} ${{ env.ASSET }}
