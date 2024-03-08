@@ -2,6 +2,7 @@
 @REM powershell -Command "Invoke-WebRequest https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.0/LLVM-14.0.0-win64.exe -OutFile llvm.exe"
 @REM choco install python3 -y
 @REM choco install choco install mingw -y
+
 choco install make
 
 pip3 install argparse datetime
@@ -13,7 +14,7 @@ mkdir "artifacts\clang"
 copy "%SYSTEMDRIVE%\Program Files\LLVM\bin\clang-tidy.exe" "artifacts\clang"
 copy "%SYSTEMDRIVE%\Program Files\LLVM\bin\clang.exe" "artifacts\clang"
 
-@REM artifacts\clang\clang-tidy.exe --version
-
 make -C test-files\c-demo\project build-data
 dir test-files\c-demo\_bld\out
+
+make -C test-files\c-demo\project

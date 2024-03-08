@@ -9,14 +9,10 @@ MAKE_PATH := $(ROOT_PATH)/project/make
 CC_OVERRIDE := yes
 ifeq ($(OS),Windows_NT)
 CC :=$(ROOT_PATH)/../../artifacts/clang/clang.exe
-LC :=$(ROOT_PATH)/../../artifacts/clang/clang.exe
 else
 CC :=$(ROOT_PATH)/../../artifacts/clang/clang
-LC :=$(ROOT_PATH)/../../artifacts/clang/clang
 endif
-
 # CC?=clang
-# LC?=clang
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -52,7 +48,7 @@ $(foreach src, $(c_files),\
 .PHONY: all prebuild postbuild clean
 
 # full build process
-all : prebuild $(BLD_PATH_OUT)/$(PRJ_NAME)_$(FILE_MODIFIER).elf postbuild
+all : prebuild $(OBJECTS) postbuild
 
 prebuild :
 	$(silent)$(ECHO) '. building $(PRJ_NAME)  '
@@ -65,11 +61,3 @@ postbuild : prebuild
 clean:
 	$(silent)$(ECHO) "### removing directories $(BLD_ROOT)"
 	$(silent)$(RM) -rf $(BLD_ROOT)
-
-$(BLD_PATH_OUT)/$(PRJ_NAME)_$(FILE_MODIFIER).elf: $(OBJECTS)
-	$(silent)$(ECHO) '.                                   '
-	$(silent)$(ECHO) '. linking ... $(PRJ_NAME)           '
-	$(silent)$(ECHO) '.                                   '
-	$(LD) $(L_FLAGS) $(LIB_PATHS) $^ $(LIB_FILES) -o $@
-	$(silent)$(ECHO) '.                                   '
-	$(silent)$(ECHO) ""

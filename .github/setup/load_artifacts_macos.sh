@@ -16,7 +16,7 @@ mkdir -p artifacts/clang
 tar -xf clang-$ver.tgz $pkg/bin
 
 # move the binaries to the artifacts folder
-mv $pkg/bin/clang-tidy/* artifacts/clang
+mv $pkg/bin/* artifacts/clang
 
 rm -rf $pkg
 rm clang-$ver.tgz
@@ -24,5 +24,9 @@ rm clang-$ver.tgz
 ls -la artifacts/clang
 artifacts/clang/clang-tidy --version
 
+# generate compile-commands.json
 gmake -C test-files/c-demo/project build-data
 ls -la test-files/c-demo/_bld/out
+
+# build project (clang-tidy can fail due to compiler errors)
+gmake -C test-files/c-demo/project
