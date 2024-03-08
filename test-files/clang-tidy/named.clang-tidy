@@ -106,7 +106,6 @@ CheckOptions:
     - { key:  readability-braces-around-statements.ShortStatementLines,           value:  '1'             }
     - { key:  readability-function-size.LineThreshold,                            value:  '500'           }
     - { key:  readability-function-size.StatementThreshold,                       value:  '800'           }
-    - { key:  readability-function-size.BranchThreshold,                          value:  '-1'            }
     - { key:  readability-function-size.ParameterThreshold,                       value:  '10'            }
     - { key:  readability-function-size.NestingThreshold,                         value:  '6'             }
     - { key:  readability-function-size.VariableThreshold,                        value:  '15'            }
