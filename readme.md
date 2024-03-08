@@ -42,6 +42,7 @@ Execute `run-clang-tidy --help` for more details, or `run-clang-tidy schema` for
   - [Specifying an alternative tidy file and command](#specifying-an-alternative-tidy-file-and-command)
   - [Specifying an alternative build root](#specifying-an-alternative-build-root)
   - [Suppressing warnings](#suppressing-warnings)
+  - [Applying fixes](#applying-fixes)
 - [Use-cases](#use-cases)
 - [Pitfalls](#pitfalls)
   - [Multiple `.clang-tidy` files](#multiple-clang-tidy-files)
@@ -306,6 +307,30 @@ Therefore the command-line option `--build-root` allows to specify the build dir
 By default, warnings issued by `clang-tidy` are output on each run, unless the command-line option `--suppress-warnings` is used.
 
 > **Remark:** `clang-tidy` warnings do not affect the return code of `run-clang-tidy`, regardless of whether or not they are part of the output. Use your `.clang-tidy` file to transform warnings into errors in case the execution should fail, e.g., by specifying `WarningsAsErrors`.
+
+## Applying fixes
+
+For some checks, `clang-tidy` supports applying fixes using the `-fix` option. The command-line option `--fix` of this wrapper enables both, `-fix` and `-fix-errors` to ensure that fixes are always applied.
+
+> **Remark:** Also using `-fix-errors` ensures that compiler _warnings_ - which can be the annoying "system-header" warnings - don't prevent `clang-tidy` to apply fixes.
+
+In case `clang-tidy` finds a problem and applies a fix, the execution will still report a failed execution. You'll need to execute `clang-tidy` again to be sure that there are no more findings or no more fixes to apply.
+
+Notice that it can happen that multiple runs with the `--fix` option are necessary to really fix a problem since running `clang-tidy` only applies one "iteration" of a fix. E.g., the following definition in the test file [`module_fix.h`](test-files/c-demo/pkg_b/module_fix/module_fix.h) will only report success after the third execution:
+
+```c
+// This macro triggers "bugprone-macro-parentheses", which is fixable.
+#define MODULE_FIX_EXPRESSION(a, b) a + b
+
+// The first execution with '--fix' applies the following fix, which is still not correct.
+#define MODULE_FIX_EXPRESSION(a, b) (a + b)
+
+// A second execution with '--fix' applies the following fix. This second execution
+// still reports an exit code != 0, since "bugprone-macro-parentheses" was still detected.
+#define MODULE_FIX_EXPRESSION(a, b) ((a) + (b))
+
+// Only after the third execution clang-tidy reports success.
+```
 
 # Use-cases
 

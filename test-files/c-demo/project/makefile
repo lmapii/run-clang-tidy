@@ -6,6 +6,14 @@ PRJ_NAME := build-demo
 ROOT_PATH := ..
 MAKE_PATH := $(ROOT_PATH)/project/make
 
+CC_OVERRIDE := yes
+ifeq ($(OS),Windows_NT)
+CC :=$(ROOT_PATH)/../../artifacts/clang/clang.exe
+else
+CC :=$(ROOT_PATH)/../../artifacts/clang/clang
+endif
+# CC?=clang
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 skip_goals = clean cleanout cleanall
@@ -17,6 +25,7 @@ src_paths := \
     $(ROOT_PATH)/pkg_a/module_a \
     $(ROOT_PATH)/pkg_b/module_b \
     $(ROOT_PATH)/pkg_b/module_c \
+    $(ROOT_PATH)/pkg_b/module_fix \
     $(ROOT_PATH)/subfolder/pkg_c/module_sub_a \
     $(ROOT_PATH)/subfolder/pkg_c/module_sub_b \
     $(ROOT_PATH)/subfolder/pkg_c/module_untidy \
@@ -39,7 +48,7 @@ $(foreach src, $(c_files),\
 .PHONY: all prebuild postbuild clean
 
 # full build process
-all : prebuild $(BLD_PATH_OUT)/$(PRJ_NAME)_$(FILE_MODIFIER).elf postbuild
+all : prebuild $(OBJECTS) postbuild
 
 prebuild :
 	$(silent)$(ECHO) '. building $(PRJ_NAME)  '
@@ -52,11 +61,3 @@ postbuild : prebuild
 clean:
 	$(silent)$(ECHO) "### removing directories $(BLD_ROOT)"
 	$(silent)$(RM) -rf $(BLD_ROOT)
-
-$(BLD_PATH_OUT)/$(PRJ_NAME)_$(FILE_MODIFIER).elf: $(OBJECTS)
-	$(silent)$(ECHO) '.                                   '
-	$(silent)$(ECHO) '. linking ... $(PRJ_NAME)           '
-	$(silent)$(ECHO) '.                                   '
-	$(LD) $(L_FLAGS) $(LIB_PATHS) $^ $(LIB_FILES) -o $@
-	$(silent)$(ECHO) '.                                   '
-	$(silent)$(ECHO) ""

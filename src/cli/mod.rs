@@ -73,6 +73,8 @@ pub struct Data {
     pub ignore_warn: bool,
     /// Suppress all logging.
     pub quiet: bool,
+    /// Run with -fix argument.
+    pub fix: bool,
 }
 
 pub struct Builder {
@@ -129,9 +131,7 @@ impl Builder {
                 .action(clap::ArgAction::Set),
             )
             .arg(arg!(-v --verbose ... "Verbosity, use -vv... for verbose output.").global(true))
-            // .arg(
-            //     arg!(--fix "Fix findings on the fly if available."),
-            // )
+            .arg(arg!(--fix "Fix findings, if possible. Executes clang-tidy with the -fix and -fix-errors options."))
             .arg(
                 arg!(-q --quiet "Suppress all output except for errors; overrides -v")
                     .action(clap::ArgAction::SetTrue),
@@ -225,6 +225,7 @@ impl Builder {
             ignore_warn: self.matches.get_flag("suppress-warnings"),
             // TODO: replace quiet flag with own logger implementation.
             quiet: self.matches.get_flag("quiet"),
+            fix: self.matches.get_flag("fix"),
         })
     }
 
