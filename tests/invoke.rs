@@ -316,6 +316,13 @@ fn invoke_quiet() {
 
 // cargo test --test invoke 'invoke_arg_fix' -- --test-threads=1 --nocapture
 
+// On Windows, a simple compilation / warnings will be treated as errors and --fix would
+// not apply any patch unless -fix-errors is specified.
+
+// 1 warning generated.
+// Found compiler errors, but -fix-errors was not specified.
+// Fixes have NOT been applied.
+
 #[test]
 fn invoke_arg_fix() {
     let json = crate_root_rel("test-files/json/test-err-fix.json");

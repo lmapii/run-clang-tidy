@@ -142,7 +142,7 @@ impl Runner {
         // }
         cmd.arg(format!("-p={}", build_root.as_ref().to_string_lossy()));
         if fix {
-            cmd.arg("-fix");
+            cmd.arg("-fix").arg("-fix-errors");
         }
         // This suppresses printing statistics about ignored warnings:
         // cmd.arg("-quiet");

@@ -131,7 +131,7 @@ impl Builder {
                 .action(clap::ArgAction::Set),
             )
             .arg(arg!(-v --verbose ... "Verbosity, use -vv... for verbose output.").global(true))
-            .arg(arg!(--fix "Fix findings, if possible. Executes clang-tidy with the -fix option."))
+            .arg(arg!(--fix "Fix findings, if possible. Executes clang-tidy with the -fix and -fix-errors options."))
             .arg(
                 arg!(-q --quiet "Suppress all output except for errors; overrides -v")
                     .action(clap::ArgAction::SetTrue),

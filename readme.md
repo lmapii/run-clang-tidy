@@ -310,7 +310,9 @@ By default, warnings issued by `clang-tidy` are output on each run, unless the c
 
 ## Applying fixes
 
-For some checks, `clang-tidy` supports applying fixes using the `-fix` option. With this wrapper, the `-fix` option can be forwarded using the command-line option `--fix`.
+For some checks, `clang-tidy` supports applying fixes using the `-fix` option. The command-line option `--fix` of this wrapper enables both, `-fix` and `-fix-errors` to ensure that fixes are always applied.
+
+> **Remark:** Also using `-fix-errors` ensures that compiler _warnings_ - which can be the annoying "system-header" warnings - don't prevent `clang-tidy` to apply fixes.
 
 In case `clang-tidy` finds a problem and applies a fix, the execution will still report a failed execution. You'll need to execute `clang-tidy` again to be sure that there are no more findings or no more fixes to apply.
 
