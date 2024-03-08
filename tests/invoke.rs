@@ -2,7 +2,7 @@
 // https://github.com/mattgathu/duma/blob/master/tests/
 // https://crates.io/crates/assert_cmd
 
-use std::{path, thread, time};
+use std::{fs::File, io::Read, path, thread, time};
 
 use assert_cmd::Command;
 use clap::crate_name;
@@ -53,6 +53,11 @@ fn run_cmd_and_assert(cmd: &mut Command, should_pass: bool) {
     let output = cmd.output().unwrap();
 
     if output.status.success() != should_pass {
+        println!(
+            "status.success: {}, should_pass: {}",
+            output.status.success(),
+            should_pass
+        );
         println!("status: {}", output.status);
         println!("{}", String::from_utf8(output.stdout).unwrap());
         println!("{}", String::from_utf8(output.stderr).unwrap());
@@ -306,4 +311,36 @@ fn invoke_quiet() {
             .arg("--quiet"),
         false,
     );
+}
+
+// cargo test --test invoke 'invoke_arg_fix' -- --test-threads=1 --nocapture
+
+#[test]
+fn invoke_arg_fix() {
+    let json = crate_root_rel("test-files/json/test-err-fix.json");
+    let fix_file = crate_root_rel("test-files/c-demo/pkg_b/module_fix/module_fix.h");
+
+    let mut module_fix = File::open(&fix_file).expect("failed to open module_fix.h test file");
+    let mut file_content = String::new();
+    module_fix
+        .read_to_string(&mut file_content)
+        .expect("failed to read module_fix.h test file");
+
+    // Use scopeguard::guard to create a guard that restores the content when it goes out of scope
+    let _guard = scopeguard::guard(file_content, |content| {
+        println!("restoring {}", fix_file.to_string_lossy());
+        std::fs::write(fix_file, content).expect("failed to restore module_fix.h");
+    });
+
+    // test-err-fix has a fixable bugprone error, so the execution fails
+    run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()), false);
+
+    // FIX #1 will apply parenthesis around the expression, but still fails.
+    run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()).arg("--fix"), false);
+
+    // FIX #2 will apply parenthesis around the parameters, but still fails.
+    run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()).arg("--fix"), false);
+
+    // after all fixes have been applied, the check should pass
+    run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()), true);
 }

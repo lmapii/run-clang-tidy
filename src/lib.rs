@@ -266,8 +266,7 @@ pub fn run(data: cli::Data) -> eyre::Result<()> {
         let dump: Vec<_> = paths
             .into_par_iter()
             .map(|path| {
-                // TODO: specify --fix
-                let result = cmd.run_tidy(&path, &build_root, false, data.ignore_warn);
+                let result = cmd.run_tidy(&path, &build_root, data.fix, data.ignore_warn);
                 let strip_path = match &strip_root {
                     None => path.clone(),
                     Some(strip) => {

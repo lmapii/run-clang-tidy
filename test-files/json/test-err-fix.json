@@ -1,0 +1,8 @@
+{
+  "description": "error since module_fix triggers a fixable bugprone",
+  "paths": ["../c-demo/pkg_?/**/*.[ch]", "../c-demo/{project,subfolder}/**/*.[ch]", "../c-demo/**/*.[ch]"],
+  "filterPost": ["module_untidy/**", "module_unused/**", "main.c"],
+  "tidyFile": "../clang-tidy/.clang-tidy",
+  "tidyRoot": "../c-demo",
+  "buildRoot": "../c-demo/_bld/out"
+}

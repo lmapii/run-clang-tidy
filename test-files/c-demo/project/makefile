@@ -17,6 +17,7 @@ src_paths := \
     $(ROOT_PATH)/pkg_a/module_a \
     $(ROOT_PATH)/pkg_b/module_b \
     $(ROOT_PATH)/pkg_b/module_c \
+    $(ROOT_PATH)/pkg_b/module_fix \
     $(ROOT_PATH)/subfolder/pkg_c/module_sub_a \
     $(ROOT_PATH)/subfolder/pkg_c/module_sub_b \
     $(ROOT_PATH)/subfolder/pkg_c/module_untidy \
