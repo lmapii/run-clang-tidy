@@ -6,6 +6,18 @@ PRJ_NAME := build-demo
 ROOT_PATH := ..
 MAKE_PATH := $(ROOT_PATH)/project/make
 
+CC_OVERRIDE := yes
+ifeq ($(OS),Windows_NT)
+CC :=$(ROOT_PATH)/../../artifacts/clang/clang.exe
+LC :=$(ROOT_PATH)/../../artifacts/clang/clang.exe
+else
+CC :=$(ROOT_PATH)/../../artifacts/clang/clang
+LC :=$(ROOT_PATH)/../../artifacts/clang/clang
+endif
+
+# CC?=clang
+# LC?=clang
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 skip_goals = clean cleanout cleanall

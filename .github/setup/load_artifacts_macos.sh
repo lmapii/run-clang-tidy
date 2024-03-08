@@ -1,6 +1,6 @@
 #!/bin/sh
 
-brew install gcc wget make python3
+brew install wget make python3
 
 pip3 install \
   argparse \
@@ -11,8 +11,13 @@ pkg="clang+llvm-$ver-x86_64-apple-darwin"
 
 wget -O clang-$ver.tgz "https://github.com/llvm/llvm-project/releases/download/llvmorg-$ver/$pkg.tar.xz"
 mkdir -p artifacts/clang
-tar -xf clang-$ver.tgz $pkg/bin/clang-tidy
-mv $pkg/bin/clang-tidy artifacts/clang
+
+# extract all binaries
+tar -xf clang-$ver.tgz $pkg/bin
+
+# move the binaries to the artifacts folder
+mv $pkg/bin/clang-tidy/* artifacts/clang
+
 rm -rf $pkg
 rm clang-$ver.tgz
 
