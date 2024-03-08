@@ -50,6 +50,7 @@ fn invoke_subs() {
 }
 
 fn run_cmd_and_assert(cmd: &mut Command, should_pass: bool) {
+    println!("command {:?} should pass {}", cmd, should_pass);
     let output = cmd.output().unwrap();
 
     if output.status.success() != should_pass {
@@ -332,15 +333,15 @@ fn invoke_arg_fix() {
         std::fs::write(fix_file, content).expect("failed to restore module_fix.h");
     });
 
-    // test-err-fix has a fixable bugprone error, so the execution fails
+    println!("test-err-fix has a fixable bugprone error, so the execution fails");
     run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()), false);
 
-    // FIX #1 will apply parenthesis around the expression, but still fails.
+    println!("FIX #1 will apply parenthesis around the expression, but still fails.");
     run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()).arg("--fix"), false);
 
-    // FIX #2 will apply parenthesis around the parameters, but still fails.
+    println!("FIX #2 will apply parenthesis around the parameters, but still fails.");
     run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()).arg("--fix"), false);
 
-    // after all fixes have been applied, the check should pass
+    println!("after all fixes have been applied, the check should pass");
     run_cmd_and_assert(cmd_with_path().arg(json.as_os_str()), true);
 }
