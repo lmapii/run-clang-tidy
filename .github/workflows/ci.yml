@@ -12,6 +12,10 @@ on:
   schedule:
   - cron: '00 01 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   rustfmt:
@@ -25,13 +29,10 @@ jobs:
       - run: cargo fmt --all -- --check
 
   typos:
-    name: Spell check with "Typos"
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Actions Repository
-      uses: actions/checkout@v4
-    - name: Check spelling of file.txt
-      uses: crate-ci/typos@master
+    - uses: actions/checkout@v4
+    - uses: crate-ci/typos@master
       # with:
       #   files: ./file.txt
 
