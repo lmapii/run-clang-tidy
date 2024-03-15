@@ -15,7 +15,7 @@ This will generate the following file, referenced by the integration tests:
 
 ## Helpers
 
-The GitHub actions need to perform the same steps so there's some scripts availble in case you're running into troubles (or if you need some guideline for a docker image):
+The GitHub actions need to perform the same steps so there's some scripts available in case you're running into troubles (or if you need some guideline for a docker image):
 
 * For [macos](../.github/setup/load_artifacts_macos.sh) bash script is available
 * For [Ubuntu](../.github/setup/load_artifacts_ubuntu.sh) a similar bash script is available

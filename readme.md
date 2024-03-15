@@ -23,7 +23,7 @@ Execute `run-clang-tidy --help` for more details, or `run-clang-tidy schema` for
 - Paths can be specified using [glob- or Unix-style path syntax](#glob--and-path-syntax).
 - The analysis is [executed in parallel](#speeding-up-the-execution) if the `-j` option is specified.
 - If your application doesn't compile the analysis will fail. Please get familiar with [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/).
-- Most modern build systems support generating the [compilation database](https://clang.llvm.org/docs/JSONCompilationDatabase.html) that is required to execute `clang-tidy`. It can be created using `cmake` or you can build one yourself using plain `make` as demostrated in the [example makefile](test-files/c-demo/project/makefile).
+- Most modern build systems support generating the [compilation database](https://clang.llvm.org/docs/JSONCompilationDatabase.html) that is required to execute `clang-tidy`. It can be created using `cmake` or you can build one yourself using plain `make` as demonstrated in the [example makefile](test-files/c-demo/project/makefile).
 - Read [The build root and `compile_commands.json`](#the-build-root-and-compile_commandsjson) for details about the compilation database.
 
 # Contents <!-- omit in toc -->
@@ -61,7 +61,7 @@ The core of this CLI tool is a `.json` configuration file that specifies where a
 
 ## Adding paths
 
-The only fields that are really required in this configuration file are the **`paths`** and the **`buildRoot`**. The paths always need to be specified in the configuration file, whereas the build root folder can provided as command line parameter. The section [The build root and `compile_commands.json`](#the-build-root-and-compile_commandsjson) will provide the necessay information about the build root directory.
+The only fields that are really required in this configuration file are the **`paths`** and the **`buildRoot`**. The paths always need to be specified in the configuration file, whereas the build root folder can provided as command line parameter. The section [The build root and `compile_commands.json`](#the-build-root-and-compile_commandsjson) will provide the necessary information about the build root directory.
 
 For now we're looking at the paths: The **`paths`** field contains paths or **globs**, relative to the parent directory of the **configuration file** `tidy.json`. Consider the following folder structure:
 
@@ -124,7 +124,7 @@ Modern build systems like [`cmake`](https://cmake.org) or [`clang`](https://clan
 
 > **Remark:** In case you're using plain old `make`, a primitive way to generate this file is demonstrated in the [example makefile](test-files/c-demo/project/makefile) for the target `build-data`.
 
-This compilation database is a major input for `clang-tidy`. Therefore, the path to the folder containing this file must be specified either in the configuration file using the **`buildRoot`**, or via the command line parameter `--build-root`. If specified in the configuration file, the path is resolved relative to the configuration file. As command line parameter an aboslute or relative path to the invocation of `run-clang-tidy` must be provided.
+This compilation database is a major input for `clang-tidy`. Therefore, the path to the folder containing this file must be specified either in the configuration file using the **`buildRoot`**, or via the command line parameter `--build-root`. If specified in the configuration file, the path is resolved relative to the configuration file. As command line parameter an absolute or relative path to the invocation of `run-clang-tidy` must be provided.
 
 ## Glob- and path syntax
 
@@ -355,7 +355,7 @@ ProjectRoot
 └── .clang-tidy
 ```
 
-When executing the tool with the following configuration, the files in `Some/Path` will be analzyed using `Some/.clang-tidy` and **not** with the configured tidy file, since this tool does not scan any paths for existing `.clang-tidy` files.
+When executing the tool with the following configuration, the files in `Some/Path` will be analyzed using `Some/.clang-tidy` and **not** with the configured tidy file, since this tool does not scan any paths for existing `.clang-tidy` files.
 
 ```json
 {

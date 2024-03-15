@@ -41,8 +41,8 @@ extern "C" {
 
 // typedef enum
 // {
-//     E_MODULE_A_SOME_VALLUE_0,
-//     E_MODULE_A_SOME_VALULE_1
+//     E_MODULE_A_SOME_VALUE_0,
+//     E_MODULE_A_SOME_VALUE_1
 // } e_module_a_enum;
 
 /***********************************************************************************************************************

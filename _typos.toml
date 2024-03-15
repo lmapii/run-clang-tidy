@@ -1,0 +1,4 @@
+# https://crates.io/crates/typos
+
+[files]
+extend-exclude = ["*.mak"]

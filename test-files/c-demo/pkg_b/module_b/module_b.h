@@ -27,8 +27,8 @@ extern "C" {
 
 typedef enum
 {
-    E_SOME_VALLUE_0,
-    E_SOME_VALULE_1
+    E_SOME_VALUE_0,
+    E_SOME_VALUE_1
 } some_enum;
 
 #define MODULE_B_SMTH 0x1
