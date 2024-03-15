@@ -50,7 +50,7 @@ jobs:
 
   compile:
     name: Compile ${{ matrix.tuple.build }}
-    needs: [rustfmt, clippy]
+    needs: [rustfmt, clippy, typos]
     runs-on: ${{ matrix.tuple.os }}
     env:
       # For some checks&builds we use cross instead of cargo.
