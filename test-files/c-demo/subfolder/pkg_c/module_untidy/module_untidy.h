@@ -25,7 +25,7 @@ extern "C" {
 
 typedef enum
 {
-    E_MODULE_UNTIDY_SOME_VALLUE_0,
+    E_MODULE_UNTIDY_SOME_VALUE_0,
     this_does_not_match_the_style,
 } e_module_untidy_a_enum;
 
