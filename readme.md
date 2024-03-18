@@ -413,6 +413,4 @@ This might be fixed in a future version of `run-clang-tidy`, i.e., the tool migh
 
 # Roadmap
 
-* A `--fix` command line option might be added to allow invoking `clang-tidy` with the `-fix` option: `clang-tidy` is able to fix some violations by itself, using this command line option will instruct `clang-tidy` to fix the files in place when analyzing.
-
 * Update the default behaviour or add a `--strict` option to avoid running the analysis for files that are not part of the compilation database.
