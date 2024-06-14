@@ -86,7 +86,7 @@ WarningsAsErrors: '
 # HeaderFilterRegex: '$'
 # https://github.com/Kitware/CMake/blob/master/.clang-tidy
 # HeaderFilterRegex: '.*\.(h|hxx|cxx)$'
-AnalyzeTemporaryDtors: false
+# AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            martin
 CheckOptions:
