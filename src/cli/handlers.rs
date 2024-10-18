@@ -4,7 +4,11 @@ use color_eyre::owo_colors::OwoColorize;
 pub struct PanicMessage;
 
 impl color_eyre::section::PanicMessage for PanicMessage {
-    fn display(&self, pi: &std::panic::PanicInfo<'_>, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn display(
+        &self,
+        pi: &std::panic::PanicHookInfo<'_>,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         writeln!(f, "\nWell, this is embarrassing.\n")?;
         writeln!(
             f,
