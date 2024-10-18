@@ -20,16 +20,17 @@ schemars = "0.8"
 serde = "1.0"
 serde_json = "1.0"
 log = "0.4"
+# env_logger 0.11 is available but removes built-in color styling ...
 env_logger = "0.10"
 eyre = "0.6"
 color-eyre = { version = "0.6", default-features = false, features = [
     "capture-spantrace",
 ] }
-regex = "1.5"
-scopeguard = "1.1"
+regex = "1.11"
+scopeguard = "1.2"
 # globmatch = { path = "../globmatch" }
 globmatch = "0.3"
-rayon = "1.5"
+rayon = "1.10"
 # indicatif = { git = "https://github.com/console-rs/indicatif", branch = "main"}
 indicatif = "0.17"
 console = { version = "0.15", default-features = false, features = [
