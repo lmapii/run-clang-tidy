@@ -53,10 +53,9 @@ impl Runner {
         match status.code() {
             Some(0) => (),
             Some(code) => {
-                return Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("Process terminated with code {code}"),
-                ));
+                return Err(io::Error::other(format!(
+                    "Process terminated with code {code}"
+                )));
             }
             None => {
                 return Err(io::Error::new(
@@ -96,10 +95,7 @@ impl Runner {
         let stdout = String::from_utf8_lossy(&cmd.stdout);
 
         self.version = Some(stdout.parse::<Version>().map_err(|err| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Failed to parse --version output {stdout}: {err}"),
-            )
+            io::Error::other(format!("Failed to parse --version output {stdout}: {err}"))
         })?);
         Ok(())
     }
@@ -115,7 +111,7 @@ impl Runner {
         let stdout = String::from_utf8_lossy(&output.stdout);
 
         if let Err(err) = Runner::eval_status(output.status) {
-            if stderr.len() != 0 {
+            if !stderr.is_empty() {
                 return RunResult::Err(format!("{err}\n---\n{stderr}---\n{stdout}"));
             }
             return (&err).into();
@@ -152,8 +148,7 @@ impl Runner {
 
     pub fn supports_config_file(&self) -> Result<(), io::Error> {
         if self.version.is_none() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "Unknown version, --config-file requires \
                 clang-format version 12.0.0 or higher",
             ));
@@ -161,14 +156,11 @@ impl Runner {
 
         let version = self.version.as_ref().unwrap();
         if version.major < 9u8 {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Invalid version {}, --config-file check requires \
+            return Err(io::Error::other(format!(
+                "Invalid version {}, --config-file check requires \
                     clang-format version 12.0.0 or higher",
-                    self.get_version().unwrap()
-                ),
-            ));
+                self.get_version().unwrap()
+            )));
         }
 
         Ok(())

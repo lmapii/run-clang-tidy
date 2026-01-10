@@ -7,7 +7,7 @@ on:
   push:
     # # Enable when testing release infrastructure on a branch.
     # branches:
-    # - feature/update-gh-release
+    # - feature/release-action-update
     tags:
     - "v[0-9]+.[0-9]+.[0-9]+"
 
@@ -16,7 +16,7 @@ jobs:
     name: create-release
     runs-on: ubuntu-latest
     # env:
-    #   # Set to force a version number, e.g., when no tag exists (testing on a branch)
+    #   # Set to force version number, e.g., when no tag exists.
     #   APP_VERSION: v255.255.255
     outputs:
       # create an output release from future step (by id)
@@ -50,7 +50,8 @@ jobs:
         tuple:
           - { build: 'linux-x86_64',         os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu',      cross: false }
           - { build: 'linux-i686',           os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',        cross: true  }
-          - { build: 'linux-arm',            os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true  } # aarch64
+          - { build: 'linux-arm-gnu',        os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-gnu',     cross: true  } # aarch64 (glibc)
+          - { build: 'linux-arm-musl',       os: 'ubuntu-latest',  target: 'aarch64-unknown-linux-musl',    cross: true  } # aarch64
         # - { build: 'linux-armv7',          os: 'ubuntu-latest',  target: 'armv7-unknown-linux-gnueabihf', cross: true  } # armv7
         # - { build: 'linux-armv6',          os: 'ubuntu-latest',  target: 'arm-unknown-linux-gnueabihf',   cross: true  } # armv6
           - { build: 'macos-x86_64',         os: 'macos-latest',   target: 'x86_64-apple-darwin',           cross: false }
@@ -62,12 +63,12 @@ jobs:
           - stable
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Install toolchain
-        uses: dtolnay/rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.toolchain }}
           target: ${{ matrix.tuple.target }}
