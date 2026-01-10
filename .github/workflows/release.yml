@@ -7,7 +7,7 @@ on:
   push:
     # # Enable when testing release infrastructure on a branch.
     # branches:
-    # - feature/update-gh-release
+    # - feature/release-action-update
     tags:
     - "v[0-9]+.[0-9]+.[0-9]+"
 
@@ -16,7 +16,7 @@ jobs:
     name: create-release
     runs-on: ubuntu-latest
     # env:
-    #   # Set to force a version number, e.g., when no tag exists (testing on a branch)
+    #   # Set to force version number, e.g., when no tag exists.
     #   APP_VERSION: v255.255.255
     outputs:
       # create an output release from future step (by id)
@@ -71,12 +71,6 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
           target: ${{ matrix.tuple.target }}
-
-      - name: Install cross
-        if: matrix.tuple.cross != false
-        run: |
-          cargo install cross
-          echo "CARGO=cross" >> $GITHUB_ENV
 
       - name: Build
         run: |

@@ -4,11 +4,11 @@
 
 use std::{fs::File, io::Read, path, thread, time};
 
-use assert_cmd::Command;
+use assert_cmd::{cargo, Command};
 use clap::crate_name;
 
 fn cmd() -> Command {
-    let mut cmd = Command::cargo_bin(crate_name!()).unwrap();
+    let mut cmd = Command::new(cargo::cargo_bin!(crate_name!()));
     cmd.env_clear();
     cmd.env_remove("PATH");
     cmd
