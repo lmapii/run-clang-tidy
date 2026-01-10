@@ -318,9 +318,9 @@ checksum = "e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7"
 
 [[package]]
 name = "globmatch"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5d4150c6e70e3bce79303d8959fbb11533398b883464f71b5d8db8e880a20d8"
+checksum = "bf4cf9d4e3df89b090e97170a3d6776519027e3a9f4d80e53541bc22a6158c36"
 dependencies = [
  "globset",
  "walkdir",
@@ -603,7 +603,7 @@ checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
 
 [[package]]
 name = "run-clang-tidy"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "assert_cmd",
  "clap",
